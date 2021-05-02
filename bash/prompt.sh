@@ -11,7 +11,7 @@ function __ps1() {
   local purple='\[\e[1;35m\]'
   local white='\[\e[00m\]'
   local black='\[\e[30m\]'
-  local blink='\[\e[5m\]'
+  local blink=$'\033[5m'
 
   local exit_status=""
   if [[ $? == 0 ]]; then
