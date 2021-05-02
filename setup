@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Authenticate
+#sudo -v
+
+# Change default shell
+#chsh -s /bin/bash
+
+# Install Homebrew
+#yes | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install the latest Git
+#brew install git
+
+# Install NodeJS + NPM
+#brew install node
+
+# Install Tmux
+#brew install tmux
+
+# Clone dotfiles
+#git clone https://github.com/kyle-angus/dotfiles.git $HOME/dotfiles
+
+ln -sf "$HOME/dotfiles/bash/aliases" "$HOME/.aliases"
+ln -sf "$HOME/dotfiles/bash/bashrc" "$HOME/.bashrc"
+ln -sf "$HOME/dotfiles/bash/bashrc" "$HOME/.bash_profile"
+ln -sf "$HOME/dotfiles/bash/profile" "$HOME/.profile"
+ln -sf "$HOME/dotfiles/git/gitconfig" "$HOME/.gitconfig"
+ln -sf "$HOME/dotfiles/npm/npmrc" "$HOME/.npmrc"
+ln -sf "$HOME/dotfiles/vim/vimrc" "$HOME/.vimrc"
+ln -sf "$HOME/dotfiles/zsh/zshenv" "$HOME/.zshenv"
+ln -sf "$HOME/dotfiles/tmux/tmux.conf" "$HOME/.tmux.conf"
+ln -sf "$HOME/dotfiles/scripts" "$HOME/.scripts"
+
+brew install coreutils
+ln -sf "$HOME/dotfiles/dircolors/dircolors" "$HOME/.dircolors"

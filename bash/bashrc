@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Used by vimrc
+export PLATFORM='mac'
+
+# Enable Homebrew 
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Disable Homebrew telemetry
+export HOMEBREW_NO_ANALYTICS=1
+
+# Disable bash deprecation warning in macOS 
+export BASH_SILENCE_DEPRECATION_WARNING=1
+
+# Setup Prompt
+source $HOME/dotfiles/bash/prompt.sh
+
+# Setup colors
+alias dircolors="gdircolors"
+alias ls="gls --color=auto"
+
+# Setup GPG
+export GPG_TTY=$(tty)
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+gpgconf --launch gpg-agent
+
+# Add Flutter
+export PATH="$PATH:$HOME/flutter/bin"
+
+# Add Scripts
+export PATH="$PATH:$HOME/.scripts"

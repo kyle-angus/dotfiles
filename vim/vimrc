@@ -1,0 +1,162 @@
+let skip_defaults_vim=1
+set nocompatible
+
+" Move viminfo file path
+set viminfo+=n~/.vim/viminfo
+
+" Automatically indent new lines
+set autoindent
+
+" Add line numbers
+set number
+
+" Add column and row position in bottom right
+set ruler
+
+" Always show what mode we're in
+set showmode
+
+" Set tab size and all that
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
+set smartindent
+set smarttab
+set expandtab
+
+" Stop vim from adding a new line at the end of a file
+if v:version >= 800
+	set nofixendofline
+endif
+
+" Keep lines from going over 80 characters
+set textwidth=0
+
+" Disable relative line numbers
+set norelativenumber
+
+" Enable spell checking
+"set spell
+
+" Disable swap files and all that nonsense
+set nobackup
+set noswapfile
+set nowritebackup
+
+" Highlight search hits
+set hlsearch
+set incsearch
+set linebreak
+map <silent> <leader><cr> :noh<cr>:redraw!<cr>
+
+" Disable the 'Hit Enter...' messages
+set shortmess=aoOtI
+
+" Show matching brackets
+set showmatch
+
+" Fix delete on macOS, requires ENV variable: $PLATFORM
+if $PLATFORM == 'mac'
+  set backspace=indent,eol,start
+endif
+
+" Set command history
+set history=100
+
+" Enable syntax colors
+syntax enable
+
+" Faster scrolling
+set ttyfast
+
+" Install vim-plug if it's not already installed
+if v:version >= 800 && executable('curl') && empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+      \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall
+endif
+
+" Load plugins if vim-pug is installed
+if filereadable(expand("~/.vim/autoload/plug.vim"))
+
+  " Plugins
+  call plug#begin("~/.vim/.plug")
+  Plug 'z0mbix/vim-shfmt'
+  Plug 'sheerun/vim-polyglot'
+  Plug 'vim-pandoc/vim-pandoc'
+  Plug 'rwxrob/vim-pandoc-syntax-simple'
+  Plug 'pangloss/vim-javascript'
+  Plug 'tpope/vim-fugitive'
+  call plug#end()
+
+  hi Normal ctermbg=NONE " for transparent background
+  hi SpellBad ctermbg=red " for transparent background
+  hi SpellRare ctermbg=red
+  hi Special ctermfg=cyan 
+  au FileType pandoc hi pandocAtxHeader ctermfg=yellow cterm=bold
+  au FileType pandoc hi pandocAtxHeaderMark ctermfg=yellow cterm=bold
+  au FileType pandoc hi pandocAtxStart ctermfg=yellow cterm=bold
+
+  set noruler
+  set laststatus=2
+  set statusline=
+  set statusline+=%*\ %<%.60F%*                      " path, trunc to 80 length
+  set statusline+=\ [%{strlen(&ft)?&ft:'none'}]      " filetype
+  set statusline+=%*\ %l:%c%*                        " current line and column
+  set statusline+=%*\ %p%%%*                         " percentage
+  set cmdheight=1
+
+  let g:shfmt_fmt_on_save = 1 
+  let g:shfmt_extra_args = '-i 2'
+
+  " Pandoc config
+  let g:pandoc#formatting#mode = 'h' " A'
+  let g:pandoc#formatting#textwidth = 72
+
+endif
+
+
+" Better command completion
+set wildmenu
+
+
+" Disable search highlighting with <C-L> when refreshing screen
+nnoremap <C-L> :nohl<CR><C-L>
+
+" Enable omni-completion
+set omnifunc=syntaxcomplete#Complete
+
+" Force file names to be a specific file type
+au bufnewfile,bufRead *.bash* set ft=sh
+au bufnewfile,bufRead *.pegn set ft=config
+au bufnewfile,bufRead *.profile set filetype=sh
+au bufnewfile,bufRead *.crontab set filetype=crontab
+au bufnewfile,bufRead *ssh/config set filetype=sshconfig
+au bufnewfile,bufRead .dockerignore set filetype=gitignore
+au bufnewfile,bufRead *gitconfig set filetype=gitconfig
+au bufnewfile,bufRead /tmp/psql.edit.* set syntax=sql
+au bufnewfile,bufRead doc.go set spell
+
+" Displays all the syntax rules for the current position
+function! <SID>SynStack()
+  if !exists("*synstack")
+    return
+  endif
+    echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfunc
+
+" Start at the last place you were editing
+au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+
+" Disable arrow keys to become a Vim Master
+noremap <up> :echoerr "Umm, use k instead"<CR>
+noremap <down> :echoerr "Umm, use j instead"<CR>
+noremap <left> :echoerr "Umm, use h instead"<CR>
+noremap <right> :echoerr "Umm, use l instead"<CR>
+
+" Better page down and page up
+noremap <C-n> <C-d>
+noremap <C-p> <C-b>
+
+hi StatusLineNC term=bold cterm=bold gui=bold
+hi StatusLine term=bold cterm=bold gui=bold
