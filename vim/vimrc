@@ -148,6 +148,9 @@ endfunc
 " Start at the last place you were editing
 au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 
+" Enable mouse
+set mouse=a
+
 " Disable arrow keys to become a Vim Master
 noremap <up> :echoerr "Umm, use k instead"<CR>
 noremap <down> :echoerr "Umm, use j instead"<CR>
