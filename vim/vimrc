@@ -2,7 +2,7 @@ let skip_defaults_vim=1
 set nocompatible
 
 " Move viminfo file path
-set viminfo+=n~/.vim/viminfo
+set viminfo+='100,n~/.vim/viminfo'
 
 " Automatically indent new lines
 set autoindent
@@ -86,6 +86,8 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   Plug 'vim-pandoc/vim-pandoc'
   Plug 'rwxrob/vim-pandoc-syntax-simple'
   Plug 'pangloss/vim-javascript'
+  Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+  Plug 'neoclide/coc-eslint'
   Plug 'tpope/vim-fugitive'
   call plug#end()
 
@@ -112,6 +114,11 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   " Pandoc config
   let g:pandoc#formatting#mode = 'h' " A'
   let g:pandoc#formatting#textwidth = 72
+
+  " Coc.nvim completions: Tab = next, S-Tab = previous 
+  inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+  inoremap <expr> <S-Tab> pumvisible() ? "\C-p>" : "\<S-Tab>"
+  
 
 endif
 
