@@ -15,10 +15,6 @@ export BASH_SILENCE_DEPRECATION_WARNING=1
 # Setup Prompt
 source $HOME/dotfiles/bash/prompt.sh
 
-# Setup colors
-alias dircolors="gdircolors"
-alias ls="gls --color=auto"
-
 # Setup GPG
 export GPG_TTY=$(tty)
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
@@ -29,3 +25,5 @@ export PATH="$PATH:$HOME/flutter/bin"
 
 # Add Scripts
 export PATH="$PATH:$HOME/.scripts"
+
+source "$HOME/.aliases"
