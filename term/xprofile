@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# TODO: This may not be the best way to start compton
+compton &
+
+fix-displays

@@ -2,9 +2,6 @@
 
 unalias -a
 
-alias dircolors="gdircolors"
-
 alias '?'=google
-alias ls="gls --color=auto"
 alias la="ls -a"
 alias ll="ls -al"

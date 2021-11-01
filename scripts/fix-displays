@@ -1,0 +1,8 @@
+#!/bin/bash
+
+displays=($(xrandr -q | grep " connected" | awk '{print $1}'))
+len=${#displays[*]}
+
+if [[ $len == 2 ]]; then
+  xrandr --output HDMI-1 --auto --output DP-2 --auto --right-of HDMI-1
+fi

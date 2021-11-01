@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Used by vimrc
-export PLATFORM='mac'
+#export PLATFORM='mac'
 
 # Enable Homebrew 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+#eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Disable Homebrew telemetry
-export HOMEBREW_NO_ANALYTICS=1
+#export HOMEBREW_NO_ANALYTICS=1
 
 # Disable bash deprecation warning in macOS 
-export BASH_SILENCE_DEPRECATION_WARNING=1
+#export BASH_SILENCE_DEPRECATION_WARNING=1
 
 # Setup Prompt
 source $HOME/dotfiles/bash/prompt.sh
@@ -19,11 +19,13 @@ source $HOME/dotfiles/bash/prompt.sh
 export GPG_TTY=$(tty)
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 gpgconf --launch gpg-agent
-
-# Add Flutter
-export PATH="$PATH:$HOME/flutter/bin"
+# TODO: Add a line here to add `enable-ssh-auth` to $HOME/.gnupg/.gpg-agent.conf for each platform
 
 # Add Scripts
 export PATH="$PATH:$HOME/.scripts"
 
 source "$HOME/.aliases"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
