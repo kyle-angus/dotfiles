@@ -21,6 +21,10 @@
 # Clone dotfiles
 #git clone https://github.com/kyle-angus/dotfiles.git $HOME/dotfiles
 
+# Setup TPM / Tmux
+git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
+echo "Prefix+I to install plugins if you're in TMUX already"
+
 ln -sf "$HOME/dotfiles/bash/aliases" "$HOME/.aliases"
 ln -sf "$HOME/dotfiles/bash/bashrc" "$HOME/.bashrc"
 ln -sf "$HOME/dotfiles/bash/bashrc" "$HOME/.bash_profile"
@@ -32,5 +36,8 @@ ln -sf "$HOME/dotfiles/zsh/zshenv" "$HOME/.zshenv"
 ln -sf "$HOME/dotfiles/tmux/tmux.conf" "$HOME/.tmux.conf"
 ln -sf "$HOME/dotfiles/scripts" "$HOME/.scripts"
 
-brew install coreutils
+#brew install coreutils
 ln -sf "$HOME/dotfiles/dircolors/dircolors" "$HOME/.dircolors"
+
+# Setup GPG on Linux Mint
+sudo apt-get install pcscd scdaemon gnupg2 pcsc-tools -y
