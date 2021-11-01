@@ -36,6 +36,8 @@ function setup_linux {
   get_dotfiles
   create_links
   setup_gpg
+
+  sudo apt-get install lynx -y
 }
 
 function setup_gpg {
@@ -111,4 +113,4 @@ function setup {
   fi
 }
 
-setup
+setup_linux
