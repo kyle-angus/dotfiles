@@ -1,4 +1,4 @@
 # dotfiles
 
 ## TODO:
-[ ] - Finish this
+- [ ] Finish this
