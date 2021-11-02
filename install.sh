@@ -32,7 +32,15 @@ function setup_macos {
 function setup_linux {
   echo "Starting setup for linux..."
 
-  get_dotfiles
+  if [! -d "$HOME/dotfiles" ]; then
+    get_dotfiles
+  else
+    echo "Pulling latest dotfiles..."
+    previousDir=$(pwd)
+    cd $HOME/dotfiles
+    git pull
+    cd $previousDir
+  fi
   create_links
   setup_gpg
 
