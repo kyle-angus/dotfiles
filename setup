@@ -91,7 +91,6 @@ function create_links {
   ln -sf "$HOME/dotfiles/zsh/zshenv" "$HOME/.zshenv"
   ln -sf "$HOME/dotfiles/tmux/tmux.conf" "$HOME/.tmux.conf"
   ln -sf "$HOME/dotfiles/scripts" "$HOME/.scripts"
-  ln -sf "$HOME/dotfiles/dircolors/dircolors" "$HOME/.dircolors"
   ln -sf "$HOME/dotfiles/term/xprofile" "$HOME/.xprofile"
   ln -sf "$HOME/dotfiles/term/Xresources" "$HOME/.Xresources"
 }
