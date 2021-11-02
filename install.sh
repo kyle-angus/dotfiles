@@ -32,12 +32,13 @@ function setup_macos {
 function setup_linux {
   echo "Starting setup for linux..."
 
-  if ! command -v nvm; then
-    install_node
-  fi
   get_dotfiles
   create_links
   setup_gpg
+
+  if ! command -v nvm; then
+    install_node
+  fi
 
   sudo apt-get install lynx -y
 }
