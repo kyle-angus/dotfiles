@@ -3,5 +3,5 @@
 unalias -a
 
 alias '?'=google
-alias la="ls -a"
-alias ll="ls -al"
+alias l="ls -a --color"
+alias ll="ls -al --color"
