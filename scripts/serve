@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -eu
+
+if  ! command -v docker &>/dev/null; then
+  echo "Docker isn't in the PATH"
+  exit 1
+fi
+
+if [ $# -eq 0 ]; then
+  echo "Requires path to mount: No argument(s) supplied."
+  exit 1
+fi
+
+mountpath=$1
+
+if [ "$1" == "." ]; then
+  echo "Requires path to mount: Relative path not supported."
+  mountpath=$(pwd)
+fi
+
+# Stop any running web services already runnning.
+docker stop web
+docker run -it --rm -d -p 8080:80 --name web -v $mountpath:/usr/share/nginx/html nginx
