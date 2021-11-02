@@ -5,3 +5,6 @@ unalias -a
 alias '?'=google
 alias l="ls -a --color"
 alias ll="ls -al --color"
+alias gs="git status"
+alias gaa="git add -A"
+alias gc="git commit"
