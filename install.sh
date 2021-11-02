@@ -112,4 +112,4 @@ function setup {
   fi
 }
 
-setup_linux
+setup
