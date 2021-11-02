@@ -5,41 +5,42 @@ URxvt.matcher.button: 1
 
 !! Colors
 
-! Special
-*.foreground: #D2C5BC
-*.background: #212121
+! special
+*.foreground:   #f7f7f7
+*.background:   #31373d
+*.cursorColor:  #f7f7f7
 
-! Black
-*color0: #d4c490
-*color8: #c4623d
+! black
+*.color0:       #343d46
+*.color8:       #4e5a65
 
-! Red
-*color1: #aab283
-*color9: #94643e
+! red
+*.color1:       #ba4247
+*.color9:       #ec5f66
 
-! Green
-*color2: #8a9b71
-*color10: #b78143
+! green
+*.color2:       #6f9a6b
+*.color10:      #99c794
 
-! Yellow
-*color3: #5c7162
-*color11: #c69459
+! yellow
+*.color3:       #e09d4f
+*.color11:      #fac761
 
-! Blue
-*color4: #a1755c
-*color12: #ae8b6b
+! blue
+*.color4:       #547faa
+*.color12:      #6aa6e1
 
-! Magenta
-*color5: #895255
-*color13: #818890
+! magenta
+*.color5:       #9d619d
+*.color13:      #c695c6
 
-! Cyan
-*color6: #a95332
-*color14: #d4c490
+! cyan
+*.color6:       #539f9f
+*.color14:      #6fcfcb
 
-! White
-*color7: #6c886f
-*color15: #aab283
+! white
+*.color7:       #b8bdc8
+*.color15:      #f7f7f7
 
 !! Appearance
 
