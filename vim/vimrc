@@ -135,22 +135,10 @@ set omnifunc=syntaxcomplete#Complete
 
 " Force file names to be a specific file type
 au bufnewfile,bufRead *.bash* set ft=sh
-au bufnewfile,bufRead *.pegn set ft=config
-au bufnewfile,bufRead *.profile set filetype=sh
 au bufnewfile,bufRead *.crontab set filetype=crontab
 au bufnewfile,bufRead *ssh/config set filetype=sshconfig
 au bufnewfile,bufRead .dockerignore set filetype=gitignore
 au bufnewfile,bufRead *gitconfig set filetype=gitconfig
-au bufnewfile,bufRead /tmp/psql.edit.* set syntax=sql
-au bufnewfile,bufRead doc.go set spell
-
-" Displays all the syntax rules for the current position
-function! <SID>SynStack()
-  if !exists("*synstack")
-    return
-  endif
-    echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
-endfunc
 
 " Start at the last place you were editing
 au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
@@ -159,10 +147,10 @@ au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g
 set mouse=a
 
 " Disable arrow keys to become a Vim Master
-noremap <up> :echoerr "Umm, use k instead"<CR>
-noremap <down> :echoerr "Umm, use j instead"<CR>
-noremap <left> :echoerr "Umm, use h instead"<CR>
-noremap <right> :echoerr "Umm, use l instead"<CR>
+noremap <up> :echoerr "Use k instead"<CR>
+noremap <down> :echoerr "Use j instead"<CR>
+noremap <left> :echoerr "Use h instead"<CR>
+noremap <right> :echoerr "Use l instead"<CR>
 
 " Better page down and page up
 noremap <C-n> <C-d>
