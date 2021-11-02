@@ -32,7 +32,9 @@ function setup_macos {
 function setup_linux {
   echo "Starting setup for linux..."
 
-  install_node
+  if ! command -v nvm; then
+    install_node
+  fi
   get_dotfiles
   create_links
   setup_gpg
