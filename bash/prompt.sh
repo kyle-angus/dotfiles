@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function __ps1() {
+function prompt_command {
 
   local red='\[\e[1;31m\]'
   local green='\[\e[1;32m\]'
@@ -21,7 +21,6 @@ function __ps1() {
   fi
 
   local host="${purple}@${brown}$HOSTNAME"
-  test "$HOSTNAME" = kangus-mbp.knet.local && host=""
 
   local dir="$(basename $PWD)"
   if test "${PWD}" = "$HOME"; then
@@ -45,4 +44,4 @@ function __ps1() {
   PS1="${exit_status} ${cyan}\u${purple}${host} ${white}${dir}${git_status}${branch}${white} "
 }
 
-PROMPT_COMMAND="${PROMPT_COMMAND:+PROMPT_COMMAND;}__ps1;"
+PROMPT_COMMAND=prompt_command
