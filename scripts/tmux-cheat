@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if command -v firefox &>/dev/null; then
+  firefox https://tmuxcheatsheet.com
+fi
