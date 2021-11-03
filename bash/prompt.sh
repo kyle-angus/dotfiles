@@ -6,7 +6,7 @@ function prompt_command {
   local green='\[\e[1;32m\]'
   local blue='\[\e[1;34m\]'
   local yellow='\[\e[1;33m\]'
-  local brown='\[\e[1;33m\]'
+  local brown='\[\e[33m\]'
   local cyan='\[\e[1;36m\]'
   local purple='\[\e[1;35m\]'
   local white='\[\e[00m\]'
@@ -20,7 +20,7 @@ function prompt_command {
     exit_status="${red}†"
   fi
 
-  local host="${purple}@${brown}$HOSTNAME"
+  local host="${white}@${yellow}$HOSTNAME"
 
   local dir="$(basename $PWD)"
   if test "${PWD}" = "$HOME"; then
@@ -41,7 +41,7 @@ function prompt_command {
     git_status="${cyan}"
   fi
   
-  PS1="${exit_status} ${cyan}\u${purple}${host} ${white}${dir}${git_status}${branch}${white} "
+  PS1="${exit_status} ${blue}\u${purple}${host} ${white}${dir}${git_status}${branch}${white} "
 }
 
 PROMPT_COMMAND=prompt_command
