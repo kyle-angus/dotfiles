@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ssh kangus@vps -t tmux attach-session
