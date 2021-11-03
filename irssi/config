@@ -200,7 +200,13 @@ statusbar = {
   };
 };
 settings = {
-  core = { real_name = "kangus"; user_name = "kangus"; nick = "kangus"; };
+  core = {
+    real_name = "kangus";
+    user_name = "kangus";
+    nick = "kangus";
+    term_charset = "UTF-8";
+
+  };
   "fe-text" = { actlist_sort = "refnum"; };
 };
 ignores = (
