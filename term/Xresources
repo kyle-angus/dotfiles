@@ -6,9 +6,9 @@ URxvt.matcher.button: 1
 !! Colors
 
 ! special
-*.foreground:   #f7f7f7
-*.background:   #31373d
-*.cursorColor:  #f7f7f7
+URxvt.foreground:   #f7f7f7
+URxvt.background:   #31373d
+URxvt.cursorColor:  #f7f7f7
 
 ! black
 *.color0:       #343d46
@@ -64,4 +64,3 @@ urxvt*background: [90]#000000
 
 URxvt.cursorBlink: true
 URxvt.scrollBar: false
-URxvt.urgentOnBell: true
