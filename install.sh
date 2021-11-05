@@ -13,8 +13,9 @@ function setup_macos {
   echo "Starting setp for macOS"
   
   # Install Homebrew
-  yes | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
+  if ! command -v brew &>/dev/null; then
+    yes | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  fi
   # Install the latest Git
   brew install git
 
@@ -26,21 +27,21 @@ function setup_macos {
 
   brew install coreutils
 
+  brew install XQuartz
+  brew install rvxt-unicode
+
   # TODO: Add steps for installing docker
+  get_dotfiles
+  create_links
+
+  setup_tmux
+  install_node
+
 }
 
 function setup_linux {
   echo "Starting setup for linux..."
-
-  if [! -d "$HOME/dotfiles" ]; then
-    get_dotfiles
-  else
-    echo "Pulling latest dotfiles..."
-    previousDir=$(pwd)
-    cd $HOME/dotfiles
-    git pull
-    cd $previousDir
-  fi
+  get_dotfiles
   create_links
   setup_gpg
 
@@ -79,8 +80,15 @@ function install_node {
 }
 
 function get_dotfiles {
-  # Clone dotfiles
-  git clone https://github.com/kyle-angus/dotfiles.git $HOME/dotfiles
+  if [ ! -d "$HOME/dotfiles" ]; then
+    git clone https://github.com/kyle-angus/dotfiles.git $HOME/dotfiles
+  else
+    echo "Pulling latest dotfiles..."
+    previousDir=$(pwd)
+    cd $HOME/dotfiles
+    git pull
+    cd $previousDir
+  fi
 }
 
 function setup_tmux {

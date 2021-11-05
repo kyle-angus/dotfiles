@@ -1,17 +1,5 @@
 #!/bin/bash
 
-# Used by vimrc
-#export PLATFORM='mac'
-
-# Enable Homebrew 
-#eval "$(/opt/homebrew/bin/brew shellenv)"
-
-# Disable Homebrew telemetry
-#export HOMEBREW_NO_ANALYTICS=1
-
-# Disable bash deprecation warning in macOS 
-#export BASH_SILENCE_DEPRECATION_WARNING=1
-
 # Setup Prompt
 source $HOME/dotfiles/bash/prompt.sh
 
@@ -26,6 +14,20 @@ export PATH="$PATH:$HOME/.scripts"
 
 export PROJECTS="/storage/projects"
 source "$HOME/.aliases"
+
+if [[ $OSTYPE == *'darwin'* ]]; then
+  # Used by vimrc
+  export PLATFORM='mac'
+
+  # Enable Homebrew 
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+
+  # Disable Homebrew telemetry
+  export HOMEBREW_NO_ANALYTICS=1
+
+  # Disable bash deprecation warning in macOS 
+  export BASH_SILENCE_DEPRECATION_WARNING=1
+fi
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
