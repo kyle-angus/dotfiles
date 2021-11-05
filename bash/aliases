@@ -2,10 +2,16 @@
 
 unalias -a
 
+alias vi="vim"
 alias '?'=google
 alias l="ls -a --color"
 alias ll="ls -al --color"
 alias gs="git status"
+alias ga="git add"
+alias gd="git diff"
 alias gaa="git add -A"
 alias gc="git commit"
-alias gp="git push"
+alias gps="git push"
+alias gpu="git pull"
+
+alias cdp="cd $PROJECTS"

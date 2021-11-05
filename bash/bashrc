@@ -19,11 +19,12 @@ source $HOME/dotfiles/bash/prompt.sh
 export GPG_TTY=$(tty)
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 gpgconf --launch gpg-agent
-# TODO: Add a line here to add `enable-ssh-auth` to $HOME/.gnupg/.gpg-agent.conf for each platform
+gpg-connect-agent updatestartuptty /bye
 
 # Add Scripts
 export PATH="$PATH:$HOME/.scripts"
 
+export PROJECTS="/storage/projects"
 source "$HOME/.aliases"
 
 export NVM_DIR="$HOME/.nvm"
