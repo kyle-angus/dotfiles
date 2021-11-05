@@ -2,10 +2,16 @@
 
 unalias -a
 
+if [[ $OSTYPE == *"darwin"* ]]; then
+  alias l="ls -aG"
+  alias ll="ls -alG"
+else 
+  alias l="ls -a --color"
+  alias ll="ls -al --color"
+fi
+
 alias vi="vim"
 alias '?'=google
-alias l="ls -a --color"
-alias ll="ls -al --color"
 alias gs="git status"
 alias ga="git add"
 alias gd="git diff"
