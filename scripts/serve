@@ -15,10 +15,13 @@ fi
 mountpath=$1
 
 if [ "$1" == "." ]; then
-  echo "Requires path to mount: Relative path not supported."
   mountpath=$(pwd)
 fi
 
-# Stop any running web services already runnning.
-docker stop web
-docker run -it --rm -d -p 8080:80 --name web -v $mountpath:/usr/share/nginx/html nginx
+if [ "$(docker ps -a | grep 'web')" ]; then
+  docker stop web
+  docker run -it --rm -d -p 8080:80 --name web -v $mountpath:/usr/share/nginx/html nginx
+else
+  docker run -it --rm -d -p 8080:80 --name web -v $mountpath:/usr/share/nginx/html nginx
+fi
+
