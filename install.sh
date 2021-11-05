@@ -52,6 +52,15 @@ function setup_linux {
   sudo apt-get install lynx -y
 }
 
+function install_docker {
+  if [[ $OSTYPE == *"darmin"* ]]; then
+    softwareupdate --install-rosetta
+    # https://desktop.docker.com/mac/main/arm64/Docker.dmg
+  else
+
+  fi
+}
+
 function setup_gpg {
   
   #sudo apt-get install pcscd scdaemon gnupg2 pcsc-tools -y
