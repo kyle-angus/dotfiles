@@ -2,7 +2,7 @@
 
 set -e
 
-if  ! command -v bear ; then
+if [[ ! command -v bear  &>/dev/null ]]; then
   echo "`bear` isn't installed."
   exit
 fi
