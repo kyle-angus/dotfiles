@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+if ! command -v bear; then
+ echo "`bear` isnt installed"
+fi
+
+if [[ $1 == '-t' ]]; then
+  bear grab-url "$3" -t "$2" &>/dev/null
+else
+  bear grab-url "$1" -t "reference/web doc" &>/dev/null
+fi
+
+
