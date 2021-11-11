@@ -2,7 +2,7 @@
 
 set -e
 
-if  ! command -v bear ; then
+if [[ $(command -v bear) == '' ]]; then
   echo "`bear` isn't installed."
   exit
 fi
@@ -23,18 +23,20 @@ if [[ $1 == '-a' ]]; then
 elif [[ $1 == '-m' ]]; then 
   bear create "${*:2}" -t zettelkasten -n "$(date +'%Y-%m-%d %I:%M %p')" > $HOME/.zet
 else
+
   mkdir -p $HOME/tmp
   touch $HOME/tmp/buffer.md
   vi $HOME/tmp/buffer.md
+
   echo -n "Set the title to the current time? (y/n) "
   read answer
 
-  if [ "$answer" != [Yy] ]; then
-    echo "Answer was no!"
-    bear create "$(cat $HOME/tmp/buffer.md)" -t zettelkasten > $HOME/.zet
-  else
-    echo "Answer was yes!"
+  echo "answer=$answer"
+
+  if [[  "$answer" =~ ^([yY])$ ]]; then
     bear create "$(cat $HOME/tmp/buffer.md)" -t zettelkasten -n "$(date +'%Y-%m-%d %I:%M %p')" > $HOME/.zet
+  else
+    bear create "$(cat $HOME/tmp/buffer.md)" -t zettelkasten > $HOME/.zet
   fi
   rm -r $HOME/tmp
 fi
