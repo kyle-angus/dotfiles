@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e
+
+if [[ ! command -v bear ]]; then
+  echo "`bear` isn't installed."
+  exit
+fi
+
+if [[ ! -f $HOME/.zet ]]; then 
+  touch $HOME/.zet
+fi
+
+ZET_ID="$(cat $HOME/.zet)"
+
+if [[ $1 == '-a' ]]; then
+  if [[ $ZET_ID == '' ]]; then
+    echo "ZET_ID not set."
+    exit 1
+  else
+    bear add-text -l "${*:2}" -i $ZET_ID &>/dev/null
+  fi
+elif [[ $1 == '-m' ]]; then 
+  bear create "${*:2}" -t zettelkasten -n "$(date +'%Y-%m-%d %I:%M %p')" > $HOME/.zet
+else
+  mkdir -p $HOME/tmp
+  touch $HOME/tmp/buffer.md
+  vi $HOME/tmp/buffer.md
+  echo -n "Set the title to the current time? (y/n) "
+  read answer
+
+  if [ "$answer" != [Yy] ]; then
+    echo "Answer was no!"
+    bear create "$(cat $HOME/tmp/buffer.md)" -t zettelkasten > $HOME/.zet
+  else
+    echo "Answer was yes!"
+    bear create "$(cat $HOME/tmp/buffer.md)" -t zettelkasten -n "$(date +'%Y-%m-%d %I:%M %p')" > $HOME/.zet
+  fi
+  rm -r $HOME/tmp
+fi
