@@ -22,17 +22,6 @@ if [[ $1 == '-a' ]]; then
   fi
 elif [[ $1 == '-m' ]]; then 
   bear create "${*:2}" -t zettelkasten -n "$(date +'%Y-%m-%d %I:%M %p')" > $HOME/.zet
-elif [[ $1 == '-t' ]]; then
-
-  TODAY=$(date +'%Y-%m-%d') 
-  TODAY_TODO_ID=$(bear untagged "$TODAY" | head -n1 | awk '{print $1;}')
-
-  if [[ $TODAY_TODO_ID != ''  ]]; then
-    bear add-text -l "- ${*:2}" -i $TODAY_TODO_ID &>/dev/null
-  else
-    bear create "- ${*:2}" -t todo -n "$(date +'%Y-%m-%d')" &>/dev/null
-  fi
-
 else
   mkdir -p $HOME/tmp
   touch $HOME/tmp/buffer.md

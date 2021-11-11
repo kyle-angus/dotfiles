@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+if  ! command -v bear ; then
+  echo "`bear` isn't installed."
+  exit
+fi
+
+TODAY=$(date +'%Y-%m-%d') 
+TODAY_TODO_ID=$(bear untagged "$TODAY" | head -n1 | awk '{print $1;}')
+
+if [[ $TODAY_TODO_ID != ''  ]]; then
+  bear add-text -l "- ${*:2}" -i $TODAY_TODO_ID &>/dev/null
+else
+  bear create "- ${*:2}" -t todo -n "$(date +'%Y-%m-%d')" &>/dev/null
+fi
