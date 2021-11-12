@@ -21,22 +21,20 @@ if [[ $1 == '-a' ]]; then
     bear add-text -l "${*:2}" -i $ZET_ID &>/dev/null
   fi
 elif [[ $1 == '-m' ]]; then 
-  bear create "${*:2}" -t zettelkasten -n "$(date +'%Y-%m-%d %I:%M %p')" > $HOME/.zet
+  bear create "${*:2}" -t zettelkasten -n "$(date +'%Y%m%d%H%M%p')" > $HOME/.zet
 else
 
   mkdir -p $HOME/tmp
   touch $HOME/tmp/buffer.md
   vi $HOME/tmp/buffer.md
 
-  echo -n "Set the title to the current time? (y/n) "
+  echo -n "Set the title to the current time? (Y/n) "
   read answer
 
-  echo "answer=$answer"
-
-  if [[  "$answer" =~ ^([yY])$ ]]; then
-    bear create "$(cat $HOME/tmp/buffer.md)" -t zettelkasten -n "$(date +'%Y-%m-%d %I:%M %p')" > $HOME/.zet
-  else
+  if [[  "$answer" =~ ^([nN])$ ]]; then
     bear create "$(cat $HOME/tmp/buffer.md)" -t zettelkasten > $HOME/.zet
+  else
+    bear create "$(cat $HOME/tmp/buffer.md)" -t zettelkasten -n "$(date +'%Y%m%d%H%M%p')" > $HOME/.zet
   fi
   rm -r $HOME/tmp
 fi
