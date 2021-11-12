@@ -18,10 +18,10 @@ if [ "$1" == "." ]; then
   mountpath=$(pwd)
 fi
 
-if [ "$(docker ps -a | grep 'web')" ]; then
+if docker ps -a | grep -q 'web'; then
   docker stop web
-  docker run -it --rm -d -p 8080:80 --name web -v $mountpath:/usr/share/nginx/html nginx
+  docker run -it --rm -d -p 8080:80 --name web -v "$mountpath:/usr/share/nginx/html" nginx
 else
-  docker run -it --rm -d -p 8080:80 --name web -v $mountpath:/usr/share/nginx/html nginx
+  docker run -it --rm -d -p 8080:80 --name web -v "$mountpath:/usr/share/nginx/html" nginx
 fi
 

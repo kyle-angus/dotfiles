@@ -2,8 +2,8 @@
 
 set -e
 
-if [ ! command -v bear  &>/dev/null ]; then
-  echo "`bear` isn't installed."
+if ! command -v bear  &>/dev/null; then
+  echo "bear isn't installed."
   exit
 fi
 
