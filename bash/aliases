@@ -11,7 +11,7 @@ else
 fi
 
 alias vi="vim"
-alias '?'=google
+alias '?'=duckduckgo
 alias gs="git status"
 alias ga="git add"
 alias gd="git diff"
