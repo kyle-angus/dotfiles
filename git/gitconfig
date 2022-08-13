@@ -1,0 +1,19 @@
+[user]
+  name = Kyle Angus
+  email = git@kyleangus.com
+
+[core]
+  excludesfile = $HOME/dotfiles/git/gitignore
+
+[color]
+  ui = true
+  diff = always
+
+[rebase]
+  autosquash = true
+
+[commit]
+  verbose = true
+
+[diff]
+  compactionHeuristic = true

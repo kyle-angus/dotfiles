@@ -6,11 +6,8 @@ set -o pipefail
 # Exit if there's an error (e) or if an undefined (u) variable is used 
 set -eu
 
-# Save global script args
-ARGS=("$@")
-
 function setup_macos {
-  echo "Starting setp for macOS"
+  echo "Starting setup for macOS"
   
   # Install Homebrew
   if ! command -v brew &>/dev/null; then
@@ -27,8 +24,7 @@ function setup_macos {
 
   brew install coreutils
 
-  brew install XQuartz
-  brew install rvxt-unicode
+  brew install fzf
 
   # TODO: Add steps for installing docker
   get_dotfiles
@@ -59,7 +55,8 @@ function setup_gpg {
   # Setup the .gnp-agent.conf in $HOME/.gnupg/ to include enable-ssh-support 
   if [ ! -f "$HOME/.gnupg/gpg-agent.conf" ]; then
     echo "gpg-agent.conf doesn't exist"
-  elif [ -z $(grep "enable-ssh-auth" "$HOME/.gnupg/gpg-agent.conf") ]; then
+  elif grep -q "enable-ssh-auth" < "$HOME/.gnupg/gpg-agent.conf"
+  then
     echo "gpg-agent.conf already configured"
   else
     echo "adding enable-ssh-auth to gpg-agent.conf"
@@ -71,7 +68,7 @@ function install_node {
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 
   # Source our profile again so we can run nvm
-  . $HOME/.bashrc
+  source "$HOME/.bashrc"
 
   # Install the latest LTS version of NodeJS
   nvm install --lts
@@ -81,50 +78,57 @@ function install_node {
 
 function get_dotfiles {
   if [ ! -d "$HOME/dotfiles" ]; then
-    git clone https://github.com/kyle-angus/dotfiles.git $HOME/dotfiles
+    git clone https://github.com/kyle-angus/dotfiles.git "$HOME/dotfiles"
   else
     echo "Pulling latest dotfiles..."
     previousDir=$(pwd)
-    cd $HOME/dotfiles
+    cd "$HOME/dotfiles"
     git pull
-    cd $previousDir
+    cd "$previousDir"
   fi
 }
 
 function setup_tmux {
 
   # Setup TPM / Tmux
-  git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
+  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
   echo "Prefix+I to install plugins if you're in TMUX already"
 
 }
 
 function create_links {
-  ln -sf "$HOME/dotfiles/bash/aliases" "$HOME/.aliases"
-  ln -sf "$HOME/dotfiles/bash/bashrc" "$HOME/.bashrc"
-  ln -sf "$HOME/dotfiles/bash/bashrc" "$HOME/.bash_profile"
-  ln -sf "$HOME/dotfiles/bash/profile" "$HOME/.profile"
-  #ln -sf "$HOME/dotfiles/git/gitconfig" "$HOME/.gitconfig"
-  ln -sf "$HOME/dotfiles/npm/npmrc" "$HOME/.npmrc"
-  ln -sf "$HOME/dotfiles/vim/vimrc" "$HOME/.vimrc"
-  ln -sf "$HOME/dotfiles/zsh/zshenv" "$HOME/.zshenv"
-  ln -sf "$HOME/dotfiles/tmux/tmux.conf" "$HOME/.tmux.conf"
-  ln -sf "$HOME/dotfiles/scripts" "$HOME/.scripts"
-  ln -sf "$HOME/dotfiles/term/xprofile" "$HOME/.xprofile"
-  ln -sf "$HOME/dotfiles/term/Xresources" "$HOME/.Xresources"
+  DOTFILES="$HOME/dotfiles"
+
+  ln -sf "$DOTFILES/bash/aliases" "$HOME/.aliases"
+  ln -sf "$DOTFILES/bash/bashrc" "$HOME/.bashrc"
+  ln -sf "$DOTFILES/bash/bashrc" "$HOME/.bash_profile"
+  ln -sf "$DOTFILES/bash/profile" "$HOME/.profile"
+  ln -sf "$DOTFILES/git/gitconfig" "$HOME/.gitconfig"
+  ln -sf "$DOTFILES/git/gitignore" "$HOME/.gitignore"
+  ln -sf "$DOTFILES/npm/npmrc" "$HOME/.npmrc"
+  ln -sf "$DOTFILES/vim/vimrc" "$HOME/.vimrc"
+  ln -sf "$DOTFILES/zsh/zshenv" "$HOME/.zshenv"
+  ln -sf "$DOTFILES/tmux/tmux.conf" "$HOME/.tmux.conf"
+  ln -sf "$DOTFILES/scripts" "$HOME/.scripts"
+  ln -sf "$DOTFILES/term/xprofile" "$HOME/.xprofile"
+  ln -sf "$DOTFILES/term/Xresources" "$HOME/.Xresources"
 }
 
 function setup {
   # Authenticate
   sudo -v
 
-  # Change default shell
-  chsh -s /bin/bash
-  
+  if [[ "$SHELL" == "/bin/bash" ]]; then
+    # Change default shell
+    chsh -s /bin/bash
+  fi
+
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     setup_linux
+    echo "Setup for Linux completed"
   elif [[ "$OSTYPE" == "darwin"* ]]; then
     setup_macos
+    echo "Setup for macOS completed"
   else
     echo "OS not supported, exiting."
     exit 1

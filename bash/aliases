@@ -20,4 +20,4 @@ alias gc="git commit"
 alias gps="git push"
 alias gpu="git pull"
 
-alias cdp="cd $PROJECTS"
+alias cdp='cd $PROJECTS'
