@@ -37,6 +37,9 @@ function setup_macos {
 
 function setup_linux {
   echo "Starting setup for linux..."
+  # Assume we're using debian...
+  sudo apt install vim tmux lynx build-essentials -y
+  
   get_dotfiles
   create_links
   setup_gpg
@@ -45,7 +48,6 @@ function setup_linux {
     install_node
   fi
 
-  sudo apt-get install lynx -y
 }
 
 function setup_gpg {
