@@ -1,8 +1,13 @@
 Host github.com
-  HostName github,com
-  IdentityFile ~/.ssh/id_rsa.github
+	HostName github.com
+	IdentityFile ~/.ssh/id_rsa.github
+	IdentitiesOnly yes
+	PreferredAuthentications publickey
+	PasswordAuthentication no
 
-Host bitbucket.org
-  HostName bitbucket.org
-  IdentityFile ~/.ssh/id_rsa.bitbucket
-
+Host bitbucket
+	HostName bitbucket.org
+	IdentityFile ~/.ssh/id_rsa.portlandwebworks
+	IdentitiesOnly yes
+	PreferredAuthentications publickey
+	PasswordAuthentication no
