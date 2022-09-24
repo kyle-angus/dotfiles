@@ -50,7 +50,7 @@ function setup_linux {
 
 function setup_gpg {
   
-  #sudo apt-get install pcscd scdaemon gnupg2 pcsc-tools -y
+  sudo apt-get install pcscd scdaemon gnupg2 pcsc-tools -y
   
   # Setup the .gnp-agent.conf in $HOME/.gnupg/ to include enable-ssh-support 
   if [ ! -f "$HOME/.gnupg/gpg-agent.conf" ]; then
@@ -60,6 +60,7 @@ function setup_gpg {
     echo "gpg-agent.conf already configured"
   else
     echo "adding enable-ssh-auth to gpg-agent.conf"
+    echo "enable-ssh-auth" > "$HOME/.gnupg/gpg-agent.conf"
   fi
 }
 
@@ -118,7 +119,7 @@ function setup {
   # Authenticate
   sudo -v
 
-  if [[ "$SHELL" == "/bin/bash" ]]; then
+  if [[ "$SHELL" != "/bin/bash" ]]; then
     # Change default shell
     chsh -s /bin/bash
   fi

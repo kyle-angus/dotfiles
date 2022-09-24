@@ -19,5 +19,3 @@ alias gaa="git add -A"
 alias gc="git commit"
 alias gps="git push"
 alias gpu="git pull"
-
-alias cdp='cd $PROJECTS'
