@@ -19,3 +19,6 @@ alias gaa="git add -A"
 alias gc="git commit"
 alias gps="git push"
 alias gpu="git pull"
+
+# Tmux with UTF-8 support 
+alias tmux="tmux -u"
