@@ -1,6 +1,9 @@
 let skip_defaults_vim=1
 set nocompatible
 
+" Hide CoC.nvim warning
+let g:coc_disable_startup_warning = 1
+
 " Move viminfo file path
 set viminfo+='100,n~/.vim/viminfo'
 
