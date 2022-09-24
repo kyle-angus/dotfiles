@@ -43,6 +43,7 @@ function setup_linux {
   get_dotfiles
   create_links
   setup_gpg
+  setup_tmux
 
   if ! command -v nvm; then
     install_node
