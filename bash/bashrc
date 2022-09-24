@@ -38,6 +38,6 @@ export NVM_DIR="$HOME/.nvm"
 # Setup Prompt
 source "$HOME/dotfiles/bash/prompt.sh"
 
-bind -s 'set completion-ignore-case on'
+set completion-ignore-case on
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
