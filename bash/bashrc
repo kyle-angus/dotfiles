@@ -12,7 +12,6 @@ gpg-connect-agent updatestartuptty /bye &>/dev/null
 # Add Scripts
 export PATH="$PATH:$HOME/.scripts"
 
-export PROJECTS="/storage/projects"
 source "$HOME/.aliases"
 
 if [[ $OSTYPE == *'darwin'* ]]; then
@@ -34,9 +33,11 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
+
 # Setup Prompt
 source "$HOME/dotfiles/bash/prompt.sh"
 
+# Add case-insensitive line completion
 set completion-ignore-case on
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
