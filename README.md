@@ -35,3 +35,4 @@ The default password for the `kangus` user is: `Test123`
 - [ ] Document irssi config
 - [ ] Document vim config
 - [ ] Add flag to uninstall/remove changes as a result of running the install script
+- [ ] Get rid of coc.nvim and use native lsp
