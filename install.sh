@@ -94,6 +94,7 @@ function get_dotfiles {
 function setup_tmux {
 
   # Setup TPM / Tmux
+  mkdir -p "$HOME/.tmux/plugins"
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
   echo "Prefix+I to install plugins if you're in TMUX already"
 
