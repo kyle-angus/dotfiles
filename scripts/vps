@@ -1,7 +1,0 @@
-#!/bin/bash
-
-if [ ! command -v mosh &>/dev/null ]; then
-  ssh kangus@vps -t tmux attach-session
-else
-  mosh kangus@vps tmux attach-session
-fi
