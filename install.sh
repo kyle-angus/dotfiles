@@ -38,7 +38,7 @@ function setup_macos {
 function setup_linux {
   echo "Starting setup for linux..."
   # Assume we're using debian...
-  sudo apt install vim tmux lynx build-essential -y
+  sudo apt install vim tmux lynx build-essential -y &>/dev/null
   
   get_dotfiles
   create_links
@@ -52,12 +52,12 @@ function setup_linux {
 }
 
 function setup_gpg {
+  echo "Setting up gpg..."
   
-  sudo apt-get install pcscd scdaemon gnupg2 pcsc-tools -y
+  sudo apt-get install pcscd scdaemon gnupg2 pcsc-tools -y &>/dev/null
   
   # Setup the .gnp-agent.conf in $HOME/.gnupg/ to include enable-ssh-support 
   if [ ! -f "$HOME/.gnupg/gpg-agent.conf" ]; then
-    echo "gpg-agent.conf doesn't exist"
     mkdir "$HOME/.gnupg"
     touch "$HOME/.gnupg/gpg-agent.conf"
     echo "enable-ssh-support" > "$HOME/.gnupg/gpg-agent.conf"
@@ -65,46 +65,46 @@ function setup_gpg {
   then
     echo "gpg-agent.conf already configured"
   else
-    echo "adding enable-ssh-support to gpg-agent.conf"
     echo "enable-ssh-support" > "$HOME/.gnupg/gpg-agent.conf"
   fi
 }
 
 function install_node {
   # Install NVM
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash &>/dev/null
 
   # Source our profile again so we can run nvm
   source "$HOME/.bashrc"
 
   # Install the latest LTS version of NodeJS
-  nvm install --lts
+  nvm install --lts &>/dev/null
 
   #TODO: Setup npm prefix for macOS (and maybe linux)
 }
 
 function get_dotfiles {
-  if [ ! -d "$HOME/dotfiles" ]; then
-    git clone https://github.com/kyle-angus/dotfiles.git "$HOME/dotfiles"
-  else
     echo "Pulling latest dotfiles..."
+  if [ ! -d "$HOME/dotfiles" ]; then
+    git clone https://github.com/kyle-angus/dotfiles.git "$HOME/dotfiles" &>/dev/null
+  else
     previousDir=$(pwd)
     cd "$HOME/dotfiles"
-    git pull
+    git pull &>/dev/null
     cd "$previousDir"
   fi
 }
 
 function setup_tmux {
-
+  echo "Setting up tmux..."
   # Setup TPM / Tmux
   mkdir -p "$HOME/.tmux/plugins"
-  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" &>/dev/null
   echo "Prefix+I to install plugins if you're in TMUX already"
 
 }
 
 function create_links {
+  echo "Creating symlinks..."
   DOTFILES="$HOME/dotfiles"
 
   ln -sf "$DOTFILES/bash/aliases" "$HOME/.aliases"
