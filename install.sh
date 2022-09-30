@@ -60,13 +60,13 @@ function setup_gpg {
     echo "gpg-agent.conf doesn't exist"
     mkdir "$HOME/.gnupg"
     touch "$HOME/.gnupg/gpg-agent.conf"
-    echo "enable-ssh-auth" > "$HOME/.gnupg/gpg-agent.conf"
-  elif grep -q "enable-ssh-auth" < "$HOME/.gnupg/gpg-agent.conf"
+    echo "enable-ssh-support" > "$HOME/.gnupg/gpg-agent.conf"
+  elif grep -q "enable-ssh-support" < "$HOME/.gnupg/gpg-agent.conf"
   then
     echo "gpg-agent.conf already configured"
   else
-    echo "adding enable-ssh-auth to gpg-agent.conf"
-    echo "enable-ssh-auth" > "$HOME/.gnupg/gpg-agent.conf"
+    echo "adding enable-ssh-support to gpg-agent.conf"
+    echo "enable-ssh-support" > "$HOME/.gnupg/gpg-agent.conf"
   fi
 }
 
