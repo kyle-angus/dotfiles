@@ -19,6 +19,10 @@ alias gaa="git add -A"
 alias gc="git commit"
 alias gps="git push"
 alias gpu="git pull"
+alias gaf="ga  \$(git ls-files -m | fzf -m)"
+alias gus="git restore --staged"
+alias gusf="gus \$(git diff --name-only --cached | fzf -m)"
+alias gdf="gd \$(git ls-files -m | fzf -m)"
 
 # Tmux with UTF-8 support 
 alias tmux="tmux -u"

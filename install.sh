@@ -13,6 +13,10 @@ function setup_macos {
   if ! command -v brew &>/dev/null; then
     yes | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
+
+  brew install bash
+  brew install bash-completion@2
+
   # Install the latest Git
   brew install git
 
