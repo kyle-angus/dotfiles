@@ -38,6 +38,8 @@ function setup_macos {
 function setup_linux {
   echo "Starting setup for linux..."
   # Assume we're using debian...
+  sudo apt update &>/dev/null
+  sudo apt-get upgrade -y &>/dev/null
   sudo apt install vim tmux lynx build-essential -y &>/dev/null
   
   get_dotfiles
