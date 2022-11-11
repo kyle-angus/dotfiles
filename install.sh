@@ -88,6 +88,7 @@ function get_dotfiles {
     echo "Pulling latest dotfiles..."
   if [ ! -d "$HOME/dotfiles" ]; then
     git clone https://github.com/kyle-angus/dotfiles.git "$HOME/dotfiles" &>/dev/null
+    git remote set-url origin git@github.com:kyle-angus/dotfiles.git
   else
     previousDir=$(pwd)
     cd "$HOME/dotfiles"
