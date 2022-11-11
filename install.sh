@@ -46,6 +46,7 @@ function setup_linux {
   create_links
   setup_gpg
   setup_tmux
+  setup_ssh
 
   if ! command -v nvm; then
     install_node
@@ -104,6 +105,17 @@ function setup_tmux {
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" &>/dev/null
   echo "Prefix+I to install plugins if you're in TMUX already"
 
+}
+
+function setup_ssh {
+  echo "Setting up ssh..."
+
+  if [ ! -d "$HOME/.ssh" ]; then
+    mkdir "$HOME/.ssh";
+    chmod 700 "$HOME/.ssh"
+  fi
+
+  # TODO: Setup keybase to automatically pull down keys
 }
 
 function create_links {
