@@ -31,7 +31,7 @@ function setup_macos {
   create_links
 
   setup_tmux
-  install_node
+  setup_node
 
 }
 
@@ -49,7 +49,7 @@ function setup_linux {
   setup_ssh
 
   if ! command -v nvm; then
-    install_node
+    setup_node
   fi
 
 }
@@ -72,7 +72,7 @@ function setup_gpg {
   fi
 }
 
-function install_node {
+function setup_node {
   # Install NVM
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash &>/dev/null
 
@@ -81,6 +81,10 @@ function install_node {
 
   # Install the latest LTS version of NodeJS
   nvm install --lts &>/dev/null
+
+  source "$HOME/.bashrc";
+  corepack enable
+  npm i -g yarn
 
   #TODO: Setup npm prefix for macOS (and maybe linux)
 }
