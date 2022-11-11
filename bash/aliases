@@ -3,11 +3,13 @@
 unalias -a
 
 if [[ $OSTYPE == *"darwin"* ]]; then
-  alias l="ls -aG"
-  alias ll="ls -alG"
+  alias l="ls --group-directories-first"
+  alias ll="ls -l --group-directories-first"
+  alias la="ls -alG"
 else 
-  alias l="ls -a --color"
-  alias ll="ls -al --color"
+  alias l="ls --color --group-directories-first"
+  alias ll="ls -l --color --group-directories-first"
+  alias la="ls -alG --color"
 fi
 
 alias vi="vim"
