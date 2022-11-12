@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e 
+
+TIMESTAMP="$(date +"%Y%m%d%I%M%p")"
+FILE="$HOME/notes/z/$TIMESTAMP.md"
+
+touch $FILE
+echo -e "# $TIMESTAMP\n##  " >> $FILE
+
+vim "+call cursor(2,4)" $FILE
+
+if [ $(wc -l < $FILE) -lt 3 ]; then
+  rm "$FILE"
+else
+  pushd $(pwd)
+  cd "$HOME/notes"
+  TITLE=$(cat $FILE | sed -n '2p' | sed "s/## //" | sed "s/ $//")
+  git add $FILE
+  git commit -m \"Add new zet: $TITLE\"
+  git push -u
+  popd
+fi

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+vim $(grep -R -InH --exclude-dir=.git "" "$HOME/notes" | fzf | sed "s/:.*//") -c 'if !argc() | qa | endif'
