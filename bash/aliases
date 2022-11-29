@@ -3,9 +3,9 @@
 unalias -a
 
 if [[ $OSTYPE == *"darwin"* ]]; then
-  alias l="ls --group-directories-first"
-  alias ll="ls -l --group-directories-first"
-  alias la="ls -alG"
+  alias l="ls --color"
+  alias ll="ls -l --color"
+  alias la="ls -alG --color"
 else 
   alias l="ls --color --group-directories-first"
   alias ll="ls -l --color --group-directories-first"
