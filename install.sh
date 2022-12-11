@@ -106,7 +106,7 @@ function setup_node {
   echo "Installing yarn..."
   source "$HOME/.bashrc";
   corepack enable
-  npm i -g --force yarn
+  npm i -g --force yarn &>/dev/null
 
   #TODO: Setup npm prefix for macOS (and maybe linux)
 }
@@ -183,10 +183,10 @@ function setup {
 
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     setup_linux
-    echo "Setup for Linux completed"
+    echo "Setup for Linux completed!"
   elif [[ "$OSTYPE" == "darwin"* ]]; then
     setup_macos
-    echo "Setup for macOS completed"
+    echo "Setup for macOS completed!"
   else
     echo "OS not supported, exiting."
     exit 1
