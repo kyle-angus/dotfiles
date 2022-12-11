@@ -5,7 +5,7 @@ set nocompatible
 let g:coc_disable_startup_warning = 1
 
 " Move viminfo file path
-set viminfo+='100,n~/.vim/viminfo'
+set viminfo+='100,n~/.vim/viminfo
 
 " Automatically indent new lines
 set autoindent
@@ -84,24 +84,16 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
 
   " Plugins
   call plug#begin("~/.vim/.plug")
-  Plug 'z0mbix/vim-shfmt'
   Plug 'sheerun/vim-polyglot'
-"  Plug 'vim-pandoc/vim-pandoc'
-"  Plug 'rwxrob/vim-pandoc-syntax-simple'
-  Plug 'pangloss/vim-javascript'
   Plug 'neoclide/coc.nvim', { 'branch': 'release' }
-  Plug 'neoclide/coc-eslint'
-  Plug 'tpope/vim-fugitive'
   call plug#end()
 
   hi Normal ctermbg=NONE " for transparent background
   hi SpellBad ctermbg=red " for transparent background
   hi SpellRare ctermbg=red
   hi Special ctermfg=cyan 
-  au FileType pandoc hi pandocAtxHeader ctermfg=yellow cterm=bold
-  au FileType pandoc hi pandocAtxHeaderMark ctermfg=yellow cterm=bold
-  au FileType pandoc hi pandocAtxStart ctermfg=yellow cterm=bold
 
+  " Status line
   set noruler
   set laststatus=2
   set statusline=
@@ -111,27 +103,17 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   set statusline+=%*\ %p%%%*                         " percentage
   set cmdheight=1
 
-  let g:shfmt_fmt_on_save = 1 
-  let g:shfmt_extra_args = '-i 2'
-
-  " Pandoc config
-  "let g:pandoc#formatting#mode = 'h' " A'
-  "let g:pandoc#formatting#textwidth = 72
-
-  " Coc.nvim completions: Tab = next, S-Tab = previous 
+    " Coc.nvim completions: Tab = next, S-Tab = previous 
   inoremap <silent><expr> <Tab>
         \ coc#pum#visible() ? coc#pum#next(1):
         \ CheckBackspace() ? "\<Tab>" :
         \ coc#refresh()
   inoremap <expr> <S-Tab> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
-  
-
 endif
 
 
 " Better command completion
 set wildmenu
-
 
 " Disable search highlighting with <C-L> when refreshing screen
 nnoremap <C-L> :nohl<CR><C-L>
