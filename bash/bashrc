@@ -41,11 +41,12 @@ export NVM_DIR="$HOME/.nvm"
 if command -v yarn &>/dev/null; then
   export PATH="$PATH:$(yarn global bin)"
 fi
+
 # Setup Prompt
 source "$HOME/dotfiles/bash/prompt.sh"
 
 # Add case-insensitive line completion
 set completion-ignore-case on
-
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+[ -f ~/.fzf/key-bindings.bash ] && source ~/.fzf/key-bindings.bash
 [ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git

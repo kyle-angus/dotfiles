@@ -154,6 +154,7 @@ function create_links {
   echo "Creating symlinks..."
   DOTFILES="$HOME/dotfiles"
 
+  # TODO: May need to add checks for each of these?
   ln -sf "$DOTFILES/bash/aliases" "$HOME/.aliases"
   ln -sf "$DOTFILES/bash/bashrc" "$HOME/.bashrc"
   ln -sf "$DOTFILES/bash/bashrc" "$HOME/.bash_profile"
