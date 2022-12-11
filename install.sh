@@ -94,16 +94,19 @@ function setup_node {
 }
 
 function get_dotfiles {
-    echo "Pulling latest dotfiles..."
+  echo "Pulling latest dotfiles..."
+  previous_dir=$(pwd)
+
   if [ ! -d "$HOME/dotfiles" ]; then
     git clone https://github.com/kyle-angus/dotfiles.git "$HOME/dotfiles" &>/dev/null
+    cd "$HOME/dotfiles"
     git remote set-url origin git@github.com:kyle-angus/dotfiles.git
   else
-    previousDir=$(pwd)
     cd "$HOME/dotfiles"
     git pull &>/dev/null
-    cd "$previousDir"
   fi
+  
+  cd "$previous_dir"
 }
 
 function setup_tmux {
