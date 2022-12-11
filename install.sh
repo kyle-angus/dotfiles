@@ -90,18 +90,23 @@ function setup_gpg {
 }
 
 function setup_node {
+  echo "Setting up node..."
+
   # Install NVM
+  echo "Installing nvm..."
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash &>/dev/null
 
   # Source our profile again so we can run nvm
   source "$HOME/.bashrc"
 
   # Install the latest LTS version of NodeJS
+  echo "Installing LTS version of node..."
   nvm install --lts &>/dev/null
 
+  echo "Installing yarn..."
   source "$HOME/.bashrc";
   corepack enable
-  npm i -g yarn
+  npm i -g --force yarn
 
   #TODO: Setup npm prefix for macOS (and maybe linux)
 }
@@ -124,9 +129,12 @@ function get_dotfiles {
 
 function setup_tmux {
   echo "Setting up tmux..."
+
   # Setup TPM / Tmux
+  echo "Installing TPM..."
   mkdir -p "$HOME/.tmux/plugins"
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" &>/dev/null
+
   echo "Prefix+I to install plugins if you're in TMUX already"
 
 }
@@ -162,11 +170,14 @@ function create_links {
 }
 
 function setup {
+  echo "Starting setup..."
+
   # Authenticate
   sudo -v
 
   if [[ "$SHELL" != "/bin/bash" ]]; then
     # Change default shell
+    echo "Changing shell to bash..."
     chsh -s /bin/bash
   fi
 
