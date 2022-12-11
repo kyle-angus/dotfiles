@@ -1,8 +1,6 @@
 let skip_defaults_vim=1
 set nocompatible
 
-" Hide CoC.nvim warning
-let g:coc_disable_startup_warning = 1
 
 " Move viminfo file path
 set viminfo+='100,n~/.vim/viminfo
@@ -72,6 +70,41 @@ syntax enable
 " Faster scrolling
 set ttyfast
 
+
+
+
+" Git Statusline functions
+function! GitBranch()
+  return system("git rev-parse --abbrev-ref HEAD 2>/dev/null | tr -d '\n'")
+endfunction
+
+function! StatuslineGit()
+  let l:branchname = GitBranch()
+  return strlen(l:branchname) > 0?'  '.l:branchname.' ':''
+endfunction
+
+function! StatuslineMode()
+  let l:mode=mode()
+  if l:mode==#"n"
+    return "Normal"
+  elseif l:mode==?"v"
+    return "Visual"
+  elseif l:mode==#"i"
+    return "Insert"
+  elseif l:mode==#"R"
+    return "Replace"
+  elseif l:mode==?"s"
+    return "Select"
+  elseif l:mode==#"t"
+    return "Terminal"
+  elseif l:mode==#"c"
+    return "Command"
+  elseif l:mode==#"!"
+    return "Shell"
+  endif
+endfunction
+
+
 " Install vim-plug if it's not already installed
 if v:version >= 800 && executable('curl') && empty(glob('~/.vim/autoload/plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
@@ -89,7 +122,7 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   call plug#end()
 
   hi Normal ctermbg=NONE " for transparent background
-  hi SpellBad ctermbg=red " for transparent background
+  hi SpellBad ctermbg=red  
   hi SpellRare ctermbg=red
   hi Special ctermfg=cyan 
 
@@ -97,10 +130,16 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   set noruler
   set laststatus=2
   set statusline=
+  set statusline+=%{StatuslineMode()} 
+  set statusline+=%#CocFadeOut#
+  set statusline+=%{StatuslineGit()}
+  set statusline+=%#LineNr#
   set statusline+=%*\ %<%.60F%*                      " path, trunc to 80 length
-  set statusline+=\ [%{strlen(&ft)?&ft:'none'}]      " filetype
+  set statusline+=%=
   set statusline+=%*\ %l:%c%*                        " current line and column
-  set statusline+=%*\ %p%%%*                         " percentage
+  set statusline+=%*\ %p%%%*\                          " percentage
+  set statusline+=%#CocFadeOut#
+  set statusline+=[%{strlen(&ft)?&ft:'none'}]      " filetype
   set cmdheight=1
 
     " Coc.nvim completions: Tab = next, S-Tab = previous 
