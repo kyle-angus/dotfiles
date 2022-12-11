@@ -11,23 +11,26 @@ function setup_macos {
   
   # Install Homebrew
   if ! command -v brew &>/dev/null; then
+    echo "Installing homebrew..."
     yes | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
 
+  echo "Installing latest bash & bash completions..."
   brew install bash
   brew install bash-completion@2
 
   # Install the latest Git
+  echo "Installing git..."
   brew install git
 
-  # Install NodeJS + NPM
-  brew install node
-
   # Install Tmux
+  echo "Installing tmux..."
   brew install tmux
 
+  echo "Installing coreutils..."
   brew install coreutils
 
+  echo "Installing fzf..."
   brew install fzf
 
   # TODO: Add steps for installing docker
@@ -41,9 +44,15 @@ function setup_macos {
 
 function setup_linux {
   echo "Starting setup for linux..."
+
   # Assume we're using debian...
+  echo "Installing updates..."
   sudo apt update &>/dev/null
+  
+  echo "Installing upgrades..."
   sudo apt-get upgrade -y &>/dev/null
+
+  echo "Installing tmux, mosh, fzf, lynx, build-essntial..."
   sudo apt install vim tmux mosh fzf lynx build-essential -y &>/dev/null
   
   get_dotfiles
@@ -61,18 +70,22 @@ function setup_linux {
 function setup_gpg {
   echo "Setting up gpg..."
   
+  echo "Installing pcsd, scdaemon, gnupg2, pcsc-tools..."
   sudo apt-get install pcscd scdaemon gnupg2 pcsc-tools -y &>/dev/null
   
   # Setup the .gnp-agent.conf in $HOME/.gnupg/ to include enable-ssh-support 
   if [ ! -f "$HOME/.gnupg/gpg-agent.conf" ]; then
+    echo "Creating gpg config directory..."
     mkdir "$HOME/.gnupg"
     touch "$HOME/.gnupg/gpg-agent.conf"
     echo "enable-ssh-support" > "$HOME/.gnupg/gpg-agent.conf"
+    echo "Enabled ssh in gpg config..."
   elif grep -q "enable-ssh-support" < "$HOME/.gnupg/gpg-agent.conf"
   then
     echo "gpg-agent.conf already configured"
   else
     echo "enable-ssh-support" > "$HOME/.gnupg/gpg-agent.conf"
+    echo "Enabled ssh in gpg config..."
   fi
 }
 
