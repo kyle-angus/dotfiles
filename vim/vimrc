@@ -104,6 +104,10 @@ function! StatuslineMode()
   endif
 endfunction
 
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col | getline('.')[col - 1] = ~# '\s'
+endfunction
 
 " Install vim-plug if it's not already installed
 if v:version >= 800 && executable('curl') && empty(glob('~/.vim/autoload/plug.vim'))
@@ -125,6 +129,9 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   hi SpellBad ctermbg=red  
   hi SpellRare ctermbg=red
   hi Special ctermfg=cyan 
+  hi SignColumn ctermbg=NONE
+
+  set signcolumn=yes
 
   " Status line
   set noruler
@@ -142,12 +149,37 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   set statusline+=[%{strlen(&ft)?&ft:'none'}]      " filetype
   set cmdheight=1
 
-    " Coc.nvim completions: Tab = next, S-Tab = previous 
+  " Coc.nvim completions: Tab = next, S-Tab = previous 
   inoremap <silent><expr> <Tab>
         \ coc#pum#visible() ? coc#pum#next(1):
         \ CheckBackspace() ? "\<Tab>" :
         \ coc#refresh()
   inoremap <expr> <S-Tab> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+  " Coc: Hit enter to accept suggestion
+  inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+        \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+  nmap <silent> gd <Plug>(coc-definition)
+  nmap <silent> gy <Plug>(coc-type-definition)
+  nmap <silent> gi <Plug>(coc-implementation)
+  nmap <silent> gr <Plug>(coc-references)
+  
+  nnoremap <silent> K :call ShowDocumentation()<CR>
+
+  function! ShowDocumentation()
+    if CocAction('hasAction', 'hover')
+      call CocActionAsync('doHover')
+    else
+      call feedkeys('K', 'in')
+    endif
+  endfunction
+
+  autocmd CursorHold * silent call CocActionAsync('highlight')
+
+  " Rename Symbol
+  nmap <leader>rn <Plug>(coc-rename)
+
 endif
 
 
