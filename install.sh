@@ -159,6 +159,7 @@ function create_links {
   ln -sf "$DOTFILES/bash/bashrc" "$HOME/.bashrc"
   ln -sf "$DOTFILES/bash/bashrc" "$HOME/.bash_profile"
   ln -sf "$DOTFILES/bash/profile" "$HOME/.profile"
+  ln -sf "$DOTFILES/bash/inputrc" "$HOME/.inputrc"
   ln -sf "$DOTFILES/git/gitconfig" "$HOME/.gitconfig"
   ln -sf "$DOTFILES/git/gitignore" "$HOME/.gitignore"
   ln -sf "$DOTFILES/npm/npmrc" "$HOME/.npmrc"
