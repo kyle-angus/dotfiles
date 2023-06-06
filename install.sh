@@ -32,6 +32,7 @@ function setup_macos {
 
   echo "Installing fzf..."
   brew install fzf
+  $(brew --prefix)/opt/fzf/install
 
   # TODO: Add steps for installing docker
   get_dotfiles

@@ -3,13 +3,13 @@
 unalias -a
 
 if [[ $OSTYPE == *"darwin"* ]]; then
-  alias l="ls --color"
-  alias ll="ls -l --color"
-  alias la="ls -alG --color"
-else 
-  alias l="ls --color --group-directories-first"
-  alias ll="ls -l --color --group-directories-first"
-  alias la="ls -alG --color"
+	alias l="ls --color"
+	alias ll="ls -l --color"
+	alias la="ls -alG --color"
+else
+	alias l="ls --color --group-directories-first"
+	alias ll="ls -l --color --group-directories-first"
+	alias la="ls -alG --color"
 fi
 
 alias vi="vim"
@@ -19,6 +19,7 @@ alias ga="git add"
 alias gd="git diff"
 alias gaa="git add -A"
 alias gc="git commit"
+alias gcb="git checkout -b"
 alias gps="git push"
 alias gpu="git pull"
 alias gaf="ga  \$(git ls-files -m | fzf -m)"
@@ -27,5 +28,8 @@ alias gusf="gus \$(git diff --name-only --cached | fzf -m)"
 alias gdf="gd \$(git ls-files -m | fzf -m)"
 alias gfu="gc --fixup \$(git log --oneline --color=never | fzf | awk '{ print \$1 }')"
 
-# Tmux with UTF-8 support 
+# Tmux with UTF-8 support
 alias tmux="tmux -u"
+
+# Use nvim
+alias vim="nvim"
