@@ -4,6 +4,7 @@
 
 [core]
   excludesfile = $HOME/dotfiles/git/gitignore
+  editor = nvim
 
 [color]
   ui = true
