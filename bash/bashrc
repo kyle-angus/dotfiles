@@ -1,17 +1,6 @@
 #!/bin/bash
 
 # Setup GPG
-<<<<<<< Updated upstream
-if command -v gpgconf &>/dev/null; then
-	GPG_TTY=$(tty)
-	SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
-	export GPG_TTY
-	export SSH_AUTH_SOCK
-
-	gpgconf --launch gpg-agent
-	gpg-connect-agent updatestartuptty /bye &>/dev/null
-=======
-
 if command -v gpgconf &>/dev/null; then
 	if [[ $(hostname -s) = "gemini" ]]; then
 		gpgconf --create-socketdir
@@ -24,7 +13,6 @@ if command -v gpgconf &>/dev/null; then
 		gpgconf --launch gpg-agent
 		gpg-connect-agent updatestartuptty /bye &>/dev/null
 	fi
->>>>>>> Stashed changes
 fi
 
 # Add Scripts
@@ -48,7 +36,6 @@ if [[ $OSTYPE == *'darwin'* ]]; then
 
 	# Add bash completions
 	[[ -r "/opt/homebrew/etc/profile.d/bash_completion.sh" ]] && . "/opt/homebrew/etc/profile.d/bash_completion.sh"
-<<<<<<< Updated upstream
 
 	# Enable iterm2 shell integrations
 	test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
@@ -58,8 +45,6 @@ if [[ $OSTYPE == *'darwin'* ]]; then
 	export PATH="/opt/homebrew/opt/curl/bin:$PATH"
 	export PATH="/Users/kangus/.local/bin:$PATH"
 	export PATH="$PATH:/Users/kangus/Library/Python/3.9/bin"
-=======
->>>>>>> Stashed changes
 fi
 
 export NVM_DIR="$HOME/.nvm"
@@ -69,14 +54,11 @@ export NVM_DIR="$HOME/.nvm"
 # Yarn
 if command -v yarn &>/dev/null; then
 	export PATH="$PATH:$(yarn global bin)"
-<<<<<<< Updated upstream
 fi
 
 # Go
 if command -v go &>/dev/null; then
 	export PATH="$PATH:$(go env GOPATH)/bin"
-=======
->>>>>>> Stashed changes
 fi
 
 # Setup Prompt
