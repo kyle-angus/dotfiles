@@ -18,11 +18,25 @@ return {
     end,
   },
 
-  { "sainnhe/sonokai" },
+  {
+    "s1n7ax/nvim-window-picker",
+    opts = {
+      hint = "floating-big-letter",
+    },
+  },
+
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    opts = {
+      flavour = "frappe",
+    },
+  },
+
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "sonokai",
+      colorscheme = "catppuccin",
     },
   },
 }
