@@ -15,8 +15,12 @@ function fix_ssh {
 
       if [[ $i -eq $size ]]; then
         echo "Using existing agent." 
+
         SSH_AGENT_PID=$p
         export SSH_AGENT_PID
+
+        SSH_AUTH_SOCK="$HOME/.ssh/.ssh-auth-sock"
+        export SSH_AUTH_SOCK
 
       else
 
