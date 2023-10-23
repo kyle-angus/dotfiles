@@ -1,5 +1,38 @@
 #!/bin/bash
 
-rm "$HOME/.ssh/known_hosts"
-eval "$(ssh-agent -s)"
-ssh-add -D
+function fix_ssh {
+  # check if ssh-eval has been ran
+
+  matches=$(ps ax | grep -v "grep" | grep "ssh-agent" | awk '{print $1}')
+
+  size=$(echo "$matches" | wc -l)
+
+  if [[ $size -gt 0 ]]; then
+  
+    i=1
+    for p in $matches
+    do
+
+      if [[ $i -eq $size ]]; then
+        echo "Using existing agent." 
+        SSH_AGENT_PID=$p
+        export SSH_AGENT_PID
+
+      else
+
+        kill "$p"
+        i=$((i+1))
+
+      fi
+
+    done
+
+  else
+
+    echo "Creating new agent."
+    eval "$(ssh-agent -a "$("$HOME"/.ssh/.ssh-auth-sock)" -s)"
+
+  fi
+}
+
+fix_ssh
