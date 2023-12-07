@@ -7,7 +7,23 @@ Host github.com
 
 Host bitbucket
 	HostName bitbucket.org
-	IdentityFile ~/.ssh/id_rsa.portlandwebworks
+	IdentityFile ~/.ssh/id_rsa.pww
 	IdentitiesOnly yes
 	PreferredAuthentications publickey
 	PasswordAuthentication no
+
+Host revres
+  HostName revres
+  User kangus
+  IdentityFile ~/.ssh/id_rsa.github
+  IdentitiesOnly yes
+  ForwardAgent yes
+  RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/1000/S.gpg-agent.extra
+
+Host gemini
+  HostName gemini
+  User kangus
+  IdentityFile ~/.ssh/id_rsa.github
+  IdentitiesOnly yes
+  ForwardAgent yes
+  RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/1000/S.gpg-agent.extra

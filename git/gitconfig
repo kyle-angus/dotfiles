@@ -3,7 +3,7 @@
   email = git@kyleangus.com
 
 [core]
-  excludesfile = $HOME/dotfiles/git/gitignore
+	excludesFile = /Users/kangus/dotfiles/git/gitignore
   editor = nvim
 
 [color]

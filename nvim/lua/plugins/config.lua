@@ -25,6 +25,8 @@ return {
     },
   },
 
+  { "lumiliet/vim-twig" },
+
   {
     "catppuccin/nvim",
     name = "catppuccin",

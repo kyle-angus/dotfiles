@@ -2,7 +2,9 @@
 
 # Setup GPG
 if command -v gpgconf &>/dev/null; then
-	if [[ "$HOSTNAME" = "gemini" ]]; then
+	if [[ "$HOSTNAME" == "revres" ]]; then
+		gpgconf --create-socketdir
+	elif [[ "$HOSTNAME" == "gemini" ]]; then
 		gpgconf --create-socketdir
 	else
 		GPG_TTY=$(tty)
