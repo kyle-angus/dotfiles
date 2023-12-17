@@ -162,7 +162,6 @@ function create_links {
 	ln -sf "$DOTFILES/bash/inputrc" "$HOME/.inputrc"
 	ln -sf "$DOTFILES/git/gitconfig" "$HOME/.gitconfig"
 	ln -sf "$DOTFILES/git/gitignore" "$HOME/.gitignore"
-	ln -sf "$DOTFILES/npm/npmrc" "$HOME/.npmrc"
 	ln -sf "$DOTFILES/vim/vimrc" "$HOME/.vimrc"
 	ln -sf "$DOTFILES/zsh/zshenv" "$HOME/.zshenv"
 	ln -sf "$DOTFILES/tmux/tmux.conf" "$HOME/.tmux.conf"
@@ -192,10 +191,8 @@ function setup {
 	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 		setup_linux
 		echo "Setup for Linux completed!"
-		source "$HOME/.bashrc"
 	elif [[ "$OSTYPE" == "darwin"* ]]; then
 		setup_macos
-		source "$HOME/.bashrc"
 		echo "Setup for macOS completed!"
 	else
 		echo "OS not supported, exiting."
