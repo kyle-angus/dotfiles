@@ -123,10 +123,16 @@ function prepare_wsl {
 	load_executables
 }
 
+function prepare_linux {
+	load_executables
+}
+
 if [[ $OSTYPE == *'darwin'* ]]; then
 	prepare_mac
 elif [ -v WSL_DISTRO_NAME ]; then
 	prepare_wsl
+elif [[ $OSTYPE == 'linux-gnu' ]]; then
+	prepare_linux
 else
 	echo "Distro not configured"
 fi

@@ -169,7 +169,12 @@ function create_links {
 	ln -sf "$DOTFILES/scripts" "$HOME/.scripts"
 	ln -sf "$DOTFILES/term/xprofile" "$HOME/.xprofile"
 	ln -sf "$DOTFILES/term/Xresources" "$HOME/.Xresources"
-	ln -sf "$DOTFILES/nvim" "$HOME/.config/nvim"
+
+	if [ -d "$HOME/.config/nvm" ]; then
+		ln -sf "$DOTFILES/nvim" "$HOME/.config/nvim"
+	else
+		mkdir -p "$HOME/.config/nvim"
+	fi
 }
 
 function setup {
