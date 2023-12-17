@@ -54,8 +54,6 @@ function load_executables {
 		export ADB_SERVER_SOCKET="tcp:$WSL_HOST:5037"
 	fi
 
-
-
 	# Setup Prompt
 	source "$HOME/dotfiles/bash/prompt.sh"
 
@@ -72,6 +70,12 @@ function load_executables {
 	# Bash
 	[ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git
 
+	# Bun
+	if [ -d ~/.bun ]; then
+		export BUN_INSTALL="$HOME/.bun"
+		export PATH=$BUN_INSTALL/bin:$PATH
+	fi
+
 	export FZF_TMUX_OPTS='-d20%'
 
 	if [ -n "$NVIM_LISTEN_ADDRESS" ]; then
@@ -87,7 +91,6 @@ function load_executables {
 }
 
 function prepare_mac {
-	# setup_gpg
 	load_executables
 
 	# Used by vimrc
@@ -117,7 +120,6 @@ function prepare_mac {
 }
 
 function prepare_wsl {
-	# setup_gpg
 	load_executables
 }
 
