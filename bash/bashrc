@@ -78,7 +78,7 @@ function load_executables {
 
 	export FZF_TMUX_OPTS='-d20%'
 
-	if [ -n "$NVIM_LISTEN_ADDRESS" ]; then
+	if [ -v NVIM_LISTEN_ADDRESS ]; then
 		alias nvim=nvr -cc split --remote-wait +'set bufhidden=wipe'
 		export VISUAL="nvr -cc split --remote-wait +'set bufhidden=wipe'"
 		export EDITOR="nvr -cc split --remote-wait +'set bufhidden=wipe'"
