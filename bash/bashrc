@@ -50,7 +50,10 @@ function load_executables {
 	# Add case-insensitive line completion
 	set completion-ignore-case on 
 	
-	[ -f ~/.fzf.bash ] && source ~/.fzf.bash [ -f ~/.fzf/key-bindings.bash ] && source ~/.fzf/key-bindings.bash [ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git
+	[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+	[ -f ~/.fzf/key-bindings.bash ] && source ~/.fzf/key-bindings.bash
+	[ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git
+
 	export FZF_TMUX_OPTS='-d20%'
 
 	if [ -n "$NVIM_LISTEN_ADDRESS" ]; then
