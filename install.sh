@@ -192,8 +192,10 @@ function setup {
 	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 		setup_linux
 		echo "Setup for Linux completed!"
+		source "$HOME/.bashrc"
 	elif [[ "$OSTYPE" == "darwin"* ]]; then
 		setup_macos
+		source "$HOME/.bashrc"
 		echo "Setup for macOS completed!"
 	else
 		echo "OS not supported, exiting."
