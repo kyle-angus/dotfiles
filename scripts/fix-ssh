@@ -7,7 +7,7 @@ function fix_ssh {
 
   size=$(echo "$matches" | wc -l)
 
-  if [[ $size -gt 0 ]]; then
+  if [[ $size -gt 0 && -n "${matches}" ]]; then
   
     i=1
     for p in $matches
@@ -17,10 +17,12 @@ function fix_ssh {
         echo "Using existing agent." 
 
         SSH_AGENT_PID=$p
-        export SSH_AGENT_PID
+        export SSH_AGENT_PID="$SSH_AGENT_PID"
+        echo "$SSH_AGENT_PID"
 
-        SSH_AUTH_SOCK="$HOME/.ssh/.ssh-auth-sock"
-        export SSH_AUTH_SOCK
+        SSH_AUTH_SOCK="$HOME/.ssh/sock/.ssh-agent"
+        echo "$SSH_AUTH_SOCK"
+        export SSH_AUTH_SOCK="$SSH_AUTH_SOCK"
 
       else
 
@@ -34,7 +36,7 @@ function fix_ssh {
   else
 
     echo "Creating new agent."
-    eval "$(ssh-agent -a "$("$HOME"/.ssh/.ssh-auth-sock)" -s)"
+    eval "$(ssh-agent -a "$HOME"/.ssh/sock/.ssh-agent)"
 
   fi
 }

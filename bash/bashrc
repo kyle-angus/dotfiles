@@ -37,6 +37,7 @@ function load_executables {
 	# Go
 	if command -v go &>/dev/null; then
 		PATH="$PATH:$(go env GOPATH)/bin"
+		PATH="$PATH:$HOME/go/bin"
 		export PATH
 	fi
 	if [ -f /usr/local/go/bin/go ]; then
@@ -44,14 +45,31 @@ function load_executables {
 		export PATH
 	fi
 
+	# Android SDK
+	if [ -d ~/android ]; then
+		export ANDROID_HOME="$HOME/android"
+		export ANDROID_SDK_ROOT=${ANDROID_HOME}
+		export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH"
+		export WSL_HOST=$(cat /etc/resolv.conf | tail -n1 | cut -d " " -f 2)
+		export ADB_SERVER_SOCKET="tcp:$WSL_HOST:5037"
+	fi
+
+
+
 	# Setup Prompt
 	source "$HOME/dotfiles/bash/prompt.sh"
 
 	# Add case-insensitive line completion
 	set completion-ignore-case on 
 	
+	# Cargo
+	[ -f ~/.cargo/env ] && source ~/.cargo/env
+
+	# FZF
 	[ -f ~/.fzf.bash ] && source ~/.fzf.bash
 	[ -f ~/.fzf/key-bindings.bash ] && source ~/.fzf/key-bindings.bash
+
+	# Bash
 	[ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git
 
 	export FZF_TMUX_OPTS='-d20%'
@@ -110,6 +128,3 @@ elif [ -v WSL_DISTRO_NAME ]; then
 else
 	echo "Distro not configured"
 fi
-
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init - bash)"

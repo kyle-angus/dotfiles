@@ -1,0 +1,6 @@
+#!/bin/bash
+
+ping -D $1 | while read row 
+do 
+  awk '{ sub(/[0-9]{10}/, strftime("%Y-%m-%d %H:%M:%S", substr($0,2,10))) }1' <<< "$row"
+done
