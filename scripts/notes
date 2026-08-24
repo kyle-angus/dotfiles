@@ -1,3 +1,10 @@
 #!/bin/bash
 
-vim $(grep -R -InH --exclude-dir=.git "" "$HOME/notes" | fzf | sed "s/:.*//") -c 'if !argc() | qa | endif'
+set -e
+
+selection=$(grep -R -InH --exclude-dir=.git "" "$HOME/notes" | fzf) || exit 0
+[ -n "$selection" ] || exit 0
+
+# grep -H prints "path:line:content"; keep the path, and quote it so notes
+# whose filenames contain whitespace still open as a single file.
+vim "${selection%%:*}"

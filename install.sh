@@ -1,201 +1,308 @@
 #!/bin/bash
 
-# Fail on a single command in a pipeline
-set -o pipefail
+# Exit on error (e), on undefined variables (u), and on failure anywhere in a
+# pipeline (pipefail).
+set -euo pipefail
 
-# Exit if there's an error (e) or if an undefined (u) variable is used
-set -eu
+DOTFILES="$HOME/dotfiles"
 
-function setup_macos {
-	echo "Starting setup for macOS"
+# Report *where* we died. Previously the script exited silently mid-run and
+# there was no way to tell which step failed.
+trap 'echo "ERROR: ${BASH_SOURCE[0]}:${LINENO}: \"${BASH_COMMAND}\" failed (exit $?)" >&2' ERR
 
-	# Install Homebrew
-	if ! command -v brew &>/dev/null; then
-		echo "Installing homebrew..."
-		yes | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+log() { printf '==> %s\n' "$*"; }
+sub() { printf '    %s\n' "$*"; }
+
+# ---------------------------------------------------------------------------
+# helpers
+# ---------------------------------------------------------------------------
+
+# Symlink src -> dest, replacing whatever is already at dest.
+#
+# Plain `ln -sf` cannot retarget a symlink that points at a directory: it
+# dereferences it and creates the new link *inside*, so re-running the install
+# left a self-referential dotfiles/scripts/scripts behind. `-n` fixes that, but
+# only if dest is unlinked first when it is a real directory.
+link() {
+	local src="$1" dest="$2"
+
+	if [ ! -e "$src" ] && [ ! -d "$src" ]; then
+		sub "SKIP $dest (missing source: $src)"
+		return 0
 	fi
 
-	echo "Installing latest bash & bash completions..."
-	brew install bash
-	brew install bash-completion@2
+	if [ -L "$dest" ] || [ -f "$dest" ]; then
+		rm -f "$dest"
+	elif [ -d "$dest" ]; then
+		if [ -z "$(ls -A "$dest")" ]; then
+			rmdir "$dest"
+		else
+			# Never silently destroy a real config directory.
+			local backup="$dest.backup.$(date +%Y%m%d%H%M%S)"
+			sub "$dest is a non-empty directory -- moving it to $backup"
+			mv "$dest" "$backup"
+		fi
+	fi
 
-	# Install the latest Git
-	echo "Installing git..."
-	brew install git
+	mkdir -p "$(dirname "$dest")"
+	ln -sfn "$src" "$dest"
+	sub "$dest -> $src"
+}
 
-	# Install Tmux
-	echo "Installing tmux..."
-	brew install tmux
+# Put brew on PATH in *this* shell. The Homebrew installer only edits your
+# profile; it does not touch the running shell, so the `brew install` calls
+# that used to follow it died with "command not found".
+load_brew_env() {
+	local candidate
+	for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+		if [ -x "$candidate" ]; then
+			eval "$("$candidate" shellenv)"
+			return 0
+		fi
+	done
+	return 1
+}
 
-	echo "Installing coreutils..."
-	brew install coreutils
+brew_install() {
+	local formula
+	for formula in "$@"; do
+		if brew list --formula "$formula" &>/dev/null; then
+			sub "$formula already installed"
+		else
+			sub "installing $formula..."
+			brew install "$formula"
+		fi
+	done
+}
 
-	echo "Installing fzf..."
-	brew install fzf
-	$(brew --prefix)/opt/fzf/install
+# ---------------------------------------------------------------------------
+# macOS
+# ---------------------------------------------------------------------------
 
-	# TODO: Add steps for installing docker
+function setup_macos {
+	log "Starting setup for macOS"
+
+	if ! load_brew_env; then
+		log "Installing homebrew..."
+		# NONINTERACTIVE=1 is Homebrew's own switch for unattended installs.
+		# The old `yes | /bin/bash -c "$(curl ...)"` form aborted the script:
+		# when the installer finished, `yes` died of SIGPIPE (exit 141) and
+		# `set -o pipefail` handed that to `set -e`. Everything after the
+		# Homebrew step was skipped.
+		NONINTERACTIVE=1 /bin/bash -c \
+			"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+		load_brew_env || {
+			echo "ERROR: homebrew installed but 'brew' was not found." >&2
+			exit 1
+		}
+	fi
+	sub "using $(brew --prefix)"
+
+	log "Installing packages..."
+	brew_install bash bash-completion@2 git tmux coreutils fzf neovim
+
+	log "Setting up fzf key bindings..."
+	# --all answers the installer's prompts (it uses `read`, so an unattended
+	# run would otherwise hang). --no-update-rc stops it appending source lines
+	# to ~/.bashrc, which is a symlink into this repo.
+	"$(brew --prefix fzf)/install" --all --no-update-rc
+
 	get_dotfiles
 	create_links
 
 	setup_tmux
 	setup_node
-
+	setup_ssh
+	setup_shell
 }
 
+# `chsh -s /bin/bash` pinned the login shell to macOS's bash 3.2 even though we
+# just installed bash 5.x -- which is why `[ -v VAR ]` (bash 4.2+) failed in
+# .bashrc. Point the login shell at the Homebrew bash instead.
+function setup_shell {
+	local brew_bash
+	brew_bash="$(brew --prefix)/bin/bash"
+
+	if [ ! -x "$brew_bash" ]; then
+		sub "$brew_bash not found, leaving login shell alone"
+		return 0
+	fi
+
+	if ! grep -qxF "$brew_bash" /etc/shells; then
+		log "Adding $brew_bash to /etc/shells (requires sudo)..."
+		echo "$brew_bash" | sudo tee -a /etc/shells >/dev/null
+	fi
+
+	if [ "${SHELL:-}" != "$brew_bash" ]; then
+		log "Changing login shell to $brew_bash..."
+		chsh -s "$brew_bash"
+		sub "open a new terminal for this to take effect"
+	else
+		sub "login shell already $brew_bash"
+	fi
+}
+
+# ---------------------------------------------------------------------------
+# Linux
+# ---------------------------------------------------------------------------
+
 function setup_linux {
-	echo "Starting setup for linux..."
+	log "Starting setup for linux..."
 
 	# Assume we're using debian...
-	echo "Installing updates..."
-	sudo apt update &>/dev/null
+	log "Installing updates..."
+	sudo apt-get update
 
-	echo "Installing upgrades..."
-	sudo apt-get upgrade -y &>/dev/null
+	log "Installing upgrades..."
+	sudo apt-get upgrade -y
 
-	echo "Installing tmux, mosh, fzf, lynx, build-essntial..."
-	sudo apt install vim tmux mosh fzf lynx build-essential -y &>/dev/null
+	log "Installing vim, tmux, mosh, fzf, lynx, build-essential..."
+	sudo apt-get install vim tmux mosh fzf lynx build-essential -y
 
 	get_dotfiles
 	create_links
 	setup_gpg
 	setup_tmux
 	setup_ssh
-
-	if ! command -v nvm; then
-		setup_node
-	fi
-
+	setup_node
 }
 
 function setup_gpg {
-	echo "Setting up gpg..."
+	log "Setting up gpg..."
 
-	echo "Installing pcsd, scdaemon, gnupg2, pcsc-tools..."
-	sudo apt-get install pcscd scdaemon gnupg2 pcsc-tools -y &>/dev/null
+	sub "installing pcscd, scdaemon, gnupg2, pcsc-tools..."
+	sudo apt-get install pcscd scdaemon gnupg2 pcsc-tools -y
 
-	# Setup the .gnp-agent.conf in $HOME/.gnupg/ to include enable-ssh-support
-	if [ ! -f "$HOME/.gnupg/gpg-agent.conf" ]; then
-		echo "Creating gpg config directory..."
-		mkdir "$HOME/.gnupg"
-		touch "$HOME/.gnupg/gpg-agent.conf"
-		echo "enable-ssh-support" >"$HOME/.gnupg/gpg-agent.conf"
-		echo "Enabled ssh in gpg config..."
-	elif grep -q "enable-ssh-support" <"$HOME/.gnupg/gpg-agent.conf"; then
-		echo "gpg-agent.conf already configured"
+	# -p: the old plain `mkdir` aborted the run when ~/.gnupg already existed.
+	mkdir -p "$HOME/.gnupg"
+	chmod 700 "$HOME/.gnupg"
+
+	local conf="$HOME/.gnupg/gpg-agent.conf"
+	if [ -f "$conf" ] && grep -q "enable-ssh-support" "$conf"; then
+		sub "gpg-agent.conf already configured"
 	else
-		echo "enable-ssh-support" >"$HOME/.gnupg/gpg-agent.conf"
-		echo "Enabled ssh in gpg config..."
+		# >> so we don't discard any other settings already in the file.
+		echo "enable-ssh-support" >>"$conf"
+		sub "enabled ssh support in gpg config"
 	fi
 }
 
+# ---------------------------------------------------------------------------
+# shared steps
+# ---------------------------------------------------------------------------
+
 function setup_node {
-	echo "Setting up node..."
+	log "Setting up node..."
 
-	# Install NVM
-	echo "Installing nvm..."
-	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash &>/dev/null
+	export NVM_DIR="$HOME/.nvm"
 
-	# Source our profile again so we can run nvm
-	source "$HOME/.bashrc"
+	if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+		sub "installing nvm..."
+		# PROFILE=/dev/null: the installer would otherwise append its own init
+		# lines to ~/.bashrc (a symlink into this repo). bash/bashrc already
+		# sources nvm.sh itself.
+		curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh |
+			PROFILE=/dev/null bash
+	else
+		sub "nvm already installed"
+	fi
 
-	# Install the latest LTS version of NodeJS
-	echo "Installing LTS version of node..."
-	nvm install --lts &>/dev/null
+	# nvm.sh is not written to survive `set -eu`, so relax them while sourcing.
+	# This step used to run `source "$HOME/.bashrc"`, which ended the whole
+	# install: load_executables returned 1 whenever ~/.cargo/env was absent.
+	set +eu
+	# shellcheck disable=SC1091
+	\. "$NVM_DIR/nvm.sh"
+	set -eu
 
-	echo "Installing yarn..."
-	source "$HOME/.bashrc"
-	corepack enable
-	npm i -g --force yarn &>/dev/null
+	sub "installing LTS version of node..."
+	nvm install --lts
 
-	#TODO: Setup npm prefix for macOS (and maybe linux)
+	if command -v corepack &>/dev/null; then
+		sub "enabling corepack (provides yarn/pnpm)..."
+		corepack enable
+	fi
 }
 
 function get_dotfiles {
-	echo "Pulling latest dotfiles..."
-	previous_dir=$(pwd)
-
-	if [ ! -d "$HOME/dotfiles" ]; then
-		git clone https://github.com/kyle-angus/dotfiles.git "$HOME/dotfiles" &>/dev/null
-		cd "$HOME/dotfiles"
-		git remote set-url origin git@github.com:kyle-angus/dotfiles.git
+	if [ -d "$DOTFILES/.git" ]; then
+		log "Updating dotfiles..."
+		# --ff-only, and non-fatal: a dirty working tree used to abort the run.
+		if ! git -C "$DOTFILES" pull --ff-only; then
+			sub "WARNING: could not fast-forward $DOTFILES (local changes?), continuing"
+		fi
 	else
-		cd "$HOME/dotfiles"
-		git pull &>/dev/null
+		log "Cloning dotfiles..."
+		git clone https://github.com/kyle-angus/dotfiles.git "$DOTFILES"
+		git -C "$DOTFILES" remote set-url origin git@github.com:kyle-angus/dotfiles.git
 	fi
-
-	cd "$previous_dir"
 }
 
 function setup_tmux {
-	echo "Setting up tmux..."
+	log "Setting up tmux..."
 
-	# Setup TPM / Tmux
-	echo "Installing TPM..."
-	mkdir -p "$HOME/.tmux/plugins"
-	git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" &>/dev/null
+	local tpm="$HOME/.tmux/plugins/tpm"
+	if [ -d "$tpm/.git" ]; then
+		sub "TPM already installed"
+	else
+		# Cloning into an existing directory is a fatal error, so every re-run
+		# of the old script died here.
+		mkdir -p "$(dirname "$tpm")"
+		git clone https://github.com/tmux-plugins/tpm "$tpm"
+	fi
 
-	echo "Prefix+I to install plugins if you're in TMUX already"
-
+	sub "Prefix+I to install plugins if you're in tmux already"
 }
 
 function setup_ssh {
-	echo "Setting up ssh..."
+	log "Setting up ssh..."
 
-	if [ ! -d "$HOME/.ssh" ]; then
-		mkdir "$HOME/.ssh"
-		chmod 700 "$HOME/.ssh"
-	fi
+	mkdir -p "$HOME/.ssh"
+	chmod 700 "$HOME/.ssh"
 
 	# TODO: Setup keybase to automatically pull down keys
 }
 
 function create_links {
-	echo "Creating symlinks..."
-	DOTFILES="$HOME/dotfiles"
+	log "Creating symlinks..."
 
-	# TODO: May need to add checks for each of these?
-	ln -sf "$DOTFILES/bash/aliases" "$HOME/.aliases"
-	ln -sf "$DOTFILES/bash/bashrc" "$HOME/.bashrc"
-	ln -sf "$DOTFILES/bash/bashrc" "$HOME/.bash_profile"
-	ln -sf "$DOTFILES/bash/profile" "$HOME/.profile"
-	ln -sf "$DOTFILES/bash/inputrc" "$HOME/.inputrc"
-	ln -sf "$DOTFILES/git/gitconfig" "$HOME/.gitconfig"
-	ln -sf "$DOTFILES/git/gitignore" "$HOME/.gitignore"
-	ln -sf "$DOTFILES/vim/vimrc" "$HOME/.vimrc"
-	ln -sf "$DOTFILES/zsh/zshenv" "$HOME/.zshenv"
-	ln -sf "$DOTFILES/tmux/tmux.conf" "$HOME/.tmux.conf"
-	ln -sf "$DOTFILES/scripts" "$HOME/.scripts"
-	ln -sf "$DOTFILES/term/xprofile" "$HOME/.xprofile"
-	ln -sf "$DOTFILES/term/Xresources" "$HOME/.Xresources"
+	link "$DOTFILES/bash/aliases" "$HOME/.aliases"
+	link "$DOTFILES/bash/bashrc" "$HOME/.bashrc"
+	link "$DOTFILES/bash/bash_profile" "$HOME/.bash_profile"
+	link "$DOTFILES/bash/profile" "$HOME/.profile"
+	link "$DOTFILES/bash/inputrc" "$HOME/.inputrc"
+	link "$DOTFILES/git/gitconfig" "$HOME/.gitconfig"
+	link "$DOTFILES/git/gitignore" "$HOME/.gitignore"
+	link "$DOTFILES/vim/vimrc" "$HOME/.vimrc"
+	link "$DOTFILES/zsh/zshenv" "$HOME/.zshenv"
+	link "$DOTFILES/tmux/tmux.conf" "$HOME/.tmux.conf"
+	link "$DOTFILES/scripts" "$HOME/.scripts"
+	link "$DOTFILES/term/xprofile" "$HOME/.xprofile"
+	link "$DOTFILES/term/Xresources" "$HOME/.Xresources"
 
-	if [ -d "$HOME/.config/nvm" ]; then
-		ln -sf "$DOTFILES/nvim" "$HOME/.config/nvim"
-	else
-		mkdir -p "$HOME/.config/nvim"
-	fi
+	# This read `-d "$HOME/.config/nvm"` -- a typo for nvim. On a clean machine
+	# the test failed, so the else branch just created an empty
+	# ~/.config/nvim and the config was never linked at all.
+	link "$DOTFILES/nvim" "$HOME/.config/nvim"
 }
 
+# ---------------------------------------------------------------------------
+
 function setup {
-	echo "Starting setup..."
+	log "Starting setup..."
 
-	# Authenticate
+	# Authenticate up front so the first sudo prompt isn't buried in output.
 	sudo -v
-
-	if [[ "$SHELL" != "/bin/bash" ]]; then
-		# Change default shell
-		echo "Changing shell to bash..."
-		chsh -s /bin/bash
-	fi
 
 	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 		setup_linux
-		echo "Setup for Linux completed!"
+		log "Setup for Linux completed!"
 	elif [[ "$OSTYPE" == "darwin"* ]]; then
 		setup_macos
-		echo "Setup for macOS completed!"
+		log "Setup for macOS completed!"
 	else
-		echo "OS not supported, exiting."
+		echo "OS not supported, exiting." >&2
 		exit 1
 	fi
 }

@@ -1,24 +1,19 @@
 #!/bin/bash
 
 function prompt_command {
-  EXIT_CODE=$?
+  local exit_code=$?
 
   # Setup some local variables for colors
   local red='\[\e[1;31m\]'
   local green='\[\e[1;32m\]'
   local blue='\[\e[1;34m\]'
   local yellow='\[\e[1;33m\]'
-  local brown='\[\e[33m\]'
-  local cyan='\[\e[1;36m\]'
   local purple='\[\e[1;35m\]'
   local white='\[\e[00m\]'
-  local black='\[\e[30m\]'
-  local blink=$'\033[5m'
-
 
   # Determine the exit status of the last command
   local exit_status=""
-  if [[ $EXIT_CODE == 0 ]]; then
+  if [[ $exit_code == 0 ]]; then
     exit_status="${yellow}†"
   else
     exit_status="${red}†"
@@ -27,28 +22,55 @@ function prompt_command {
   # Setup host
   local host="${white}@${yellow}$HOSTNAME"
 
-  # Setup current path
-  local dir="$(basename $PWD)"
-  if test "${PWD}" = "$HOME"; then
+  # Setup current path. Parameter expansion instead of `basename $PWD`, which
+  # word-splits on directories containing whitespace and then makes basename
+  # print one line per word.
+  local dir="${PWD##*/}"
+  if [[ $PWD == "$HOME" ]]; then
     dir="~"
+  elif [[ -z $dir ]]; then
+    dir="/" # $PWD is the filesystem root
   fi
 
-  # Setup current git information
-  local branch=" ($(git branch --show-current 2>/dev/null))"
-  test "${branch}" = " ()" && branch=""
-  local git_status=$(git status 2>/dev/null)
-  test "${dir}" = "${branch}" && branch='(.)'
-  if [[ ! $git_status =~ "working tree clean" ]]; then
-    git_status="${red}"
-  elif [[ $git_status =~ "Your branch is ahead of" ]]; then
-    git_status="${yellow}"
-  elif [[ $git_status =~ "nothing to commit" ]]; then
-    git_status="${green}"
-  else
-    git_status="${cyan}"
+  # Setup current git information. `git status --porcelain -b` reports the
+  # branch and the dirty state in a single call, and its output is stable
+  # across locales -- unlike the human-readable `git status` this used to grep.
+  local branch=""
+  local git_color="${white}"
+  local git_state
+  git_state=$(git status --porcelain=v1 -b 2>/dev/null)
+
+  if [[ -n $git_state ]]; then
+    # First line is the branch header, e.g. "## main...origin/main [ahead 1]"
+    local head_line="${git_state%%$'\n'*}"
+    head_line="${head_line#\#\# }"
+
+    local branch_name="${head_line%%...*}" # drop the upstream, if any
+    branch_name="${branch_name%% *}"       # drop "[ahead N]" when no upstream
+
+    if [[ $head_line == "HEAD (no branch)" ]]; then
+      branch_name="detached"
+    elif [[ $head_line == "No commits yet on "* ]]; then
+      branch_name="${head_line#No commits yet on }"
+    fi
+
+    if [[ $git_state == *$'\n'* ]]; then
+      git_color="${red}" # working tree is dirty
+    elif [[ $head_line == *"[ahead "* || $head_line == *"[behind "* ]]; then
+      git_color="${yellow}" # clean, but out of sync with the upstream
+    else
+      git_color="${green}" # clean and in sync
+    fi
+
+    # Collapse to "(.)" when the branch only repeats the directory name.
+    if [[ $branch_name == "$dir" ]]; then
+      branch=" (.)"
+    else
+      branch=" (${branch_name})"
+    fi
   fi
-  
-  PS1="${exit_status} ${blue}\u${purple}${host} ${white}${dir}${git_status}${branch}${white} "
+
+  PS1="${exit_status} ${blue}\u${purple}${host} ${white}${dir}${git_color}${branch}${white} "
 }
 
 PROMPT_COMMAND=prompt_command

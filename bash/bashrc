@@ -57,9 +57,12 @@ function load_executables {
 	# Setup Prompt
 	source "$HOME/dotfiles/bash/prompt.sh"
 
-	# Add case-insensitive line completion
-	set completion-ignore-case on 
-	
+	# Add case-insensitive line completion. This is a readline setting, so it
+	# needs `bind`; plain `set` would just assign positional parameters.
+	if [[ $- == *i* ]]; then
+		bind 'set completion-ignore-case on'
+	fi
+
 	# Cargo
 	[ -f ~/.cargo/env ] && source ~/.cargo/env
 
@@ -78,16 +81,20 @@ function load_executables {
 
 	export FZF_TMUX_OPTS='-d20%'
 
-	if [ -v NVIM_LISTEN_ADDRESS ]; then
-		alias nvim=nvr -cc split --remote-wait +'set bufhidden=wipe'
-		export VISUAL="nvr -cc split --remote-wait +'set bufhidden=wipe'"
-		export EDITOR="nvr -cc split --remote-wait +'set bufhidden=wipe'"
+	# Inside an embedded nvim :terminal, route $EDITOR through nvr so files open
+	# in the parent instance instead of nesting a new nvim.
+	# NVIM_LISTEN_ADDRESS is nvim < 0.5; NVIM is 0.5+.
+	# ${VAR+x} is the portable equivalent of `-v` (bash 4.2+ only).
+	if [ -n "${NVIM_LISTEN_ADDRESS+x}" ] || [ -n "${NVIM+x}" ]; then
+		local nvr_cmd="nvr -cc split --remote-wait +'set bufhidden=wipe'"
+		alias nvim="$nvr_cmd"
+		export VISUAL="$nvr_cmd"
+		export EDITOR="$nvr_cmd"
 	else
 		export VISUAL="nvim"
 		export EDITOR="nvim"
 	fi
 
-	test -e "${HOME}/.cargo/env" && source "${HOME}/.cargo/env"
 }
 
 function prepare_mac {
@@ -129,7 +136,7 @@ function prepare_linux {
 
 if [[ $OSTYPE == *'darwin'* ]]; then
 	prepare_mac
-elif [ -v WSL_DISTRO_NAME ]; then
+elif [ -n "${WSL_DISTRO_NAME+x}" ]; then
 	prepare_wsl
 elif [[ $OSTYPE == 'linux-gnu' ]]; then
 	prepare_linux

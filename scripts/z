@@ -1,23 +1,21 @@
 #!/bin/bash
 
-set -e 
+set -e
 
 TIMESTAMP="$(date +"%Y%m%d%I%M%p")"
 FILE="$HOME/notes/z/$TIMESTAMP.md"
 
-touch $FILE
-echo -e "# $TIMESTAMP\n##  " >> $FILE
+mkdir -p "$(dirname "$FILE")"
+printf '# %s\n##  \n' "$TIMESTAMP" >> "$FILE"
 
-vim "+call cursor(2,4)" $FILE
+vim "+call cursor(2,4)" "$FILE"
 
-if [ $(wc -l < $FILE) -lt 3 ]; then
+if [ "$(wc -l < "$FILE")" -lt 3 ]; then
   rm "$FILE"
 else
-  pushd $(pwd)
-  cd "$HOME/notes"
-  TITLE=$(cat $FILE | sed -n '2p' | sed "s/## //" | sed "s/ $//")
-  git add $FILE
-  git commit -m \"Add new zet: $TITLE\"
-  git push -u
-  popd
+  TITLE=$(sed -n '2p' "$FILE" | sed -e 's/^## //' -e 's/ *$//')
+  # -C keeps us out of pushd/popd, which broke on paths containing spaces.
+  git -C "$HOME/notes" add "$FILE"
+  git -C "$HOME/notes" commit -m "Add new zet: $TITLE"
+  git -C "$HOME/notes" push -u
 fi
