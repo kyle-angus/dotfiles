@@ -100,7 +100,11 @@ function setup_macos {
 	sub "using $(brew --prefix)"
 
 	log "Installing packages..."
-	brew_install bash bash-completion@2 git tmux coreutils fzf neovim
+	# openssh: macOS's own OpenSSH is built without ENABLE_SK_INTERNAL, so it
+	# cannot use a FIDO2/YubiKey SSH key at all ("internal security key support
+	# not enabled"). Homebrew's build links libfido2 and works. brew's bin
+	# directory precedes /usr/bin on PATH, so this one wins.
+	brew_install bash bash-completion@2 git tmux coreutils fzf neovim openssh libfido2 ykman
 
 	log "Setting up fzf key bindings..."
 	# --all answers the installer's prompts (it uses `read`, so an unattended
@@ -109,11 +113,11 @@ function setup_macos {
 	"$(brew --prefix fzf)/install" --all --no-update-rc
 
 	get_dotfiles
+	setup_ssh
 	create_links
 
 	setup_tmux
 	setup_node
-	setup_ssh
 	setup_shell
 }
 
@@ -160,11 +164,15 @@ function setup_linux {
 	log "Installing vim, tmux, mosh, fzf, lynx, build-essential..."
 	sudo apt-get install vim tmux mosh fzf lynx build-essential -y
 
+	# udev rules so the YubiKey's FIDO2 HID device is reachable without root.
+	log "Installing FIDO2 support..."
+	sudo apt-get install libfido2-1 libu2f-udev -y
+
 	get_dotfiles
+	setup_ssh
 	create_links
 	setup_gpg
 	setup_tmux
-	setup_ssh
 	setup_node
 }
 
@@ -281,6 +289,10 @@ function create_links {
 	link "$DOTFILES/term/xprofile" "$HOME/.xprofile"
 	link "$DOTFILES/term/Xresources" "$HOME/.Xresources"
 
+	# This was missing entirely, so ~/.ssh/config never existed and none of
+	# the host blocks (github.com, revres, gemini) were ever in effect.
+	link "$DOTFILES/ssh/config" "$HOME/.ssh/config"
+
 	# This read `-d "$HOME/.config/nvm"` -- a typo for nvim. On a clean machine
 	# the test failed, so the else branch just created an empty
 	# ~/.config/nvim and the config was never linked at all.
@@ -301,6 +313,10 @@ function setup {
 	elif [[ "$OSTYPE" == "darwin"* ]]; then
 		setup_macos
 		log "Setup for macOS completed!"
+		echo
+		log "To set up the YubiKey SSH key for GitHub, run:"
+		sub "yubikey-ssh generate   (first time)"
+		sub "yubikey-ssh recover    (key already exists on the token)"
 	else
 		echo "OS not supported, exiting." >&2
 		exit 1

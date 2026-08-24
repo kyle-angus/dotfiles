@@ -1,6 +1,8 @@
 [user]
   name = Kyle Angus
   email = git@kyleangus.com
+  # For gpg.format=ssh this is the *public* key, not a key id.
+  signingkey = ~/.ssh/id_ed25519_sk.pub
 
 [core]
 	excludesFile = /Users/kangus/dotfiles/git/gitignore
@@ -15,6 +17,9 @@
 
 [commit]
   verbose = true
+  # Turned on by `yubikey-ssh generate|recover` once the key actually exists.
+  # Enabling it before then makes every `git commit` fail outright.
+	gpgsign = true
 
 [diff]
   compactionHeuristic = true
@@ -24,3 +29,16 @@
 
 [pull]
   rebase = true
+
+# Sign commits and tags with the YubiKey-backed SSH key rather than GPG.
+# Requires git >= 2.34.
+[gpg]
+  format = ssh
+
+[gpg "ssh"]
+  # Lets `git log --show-signature` verify locally. GitHub verifies via the
+  # signing key you upload to your account (separate from the auth key).
+  allowedSignersFile = ~/.ssh/allowed_signers
+
+[tag]
+	gpgsign = true

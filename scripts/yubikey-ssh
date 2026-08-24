@@ -1,0 +1,221 @@
+#!/bin/bash
+#
+# Provision or recover the YubiKey-backed FIDO2 SSH key used for GitHub.
+#
+#   yubikey-ssh generate   create a new resident key on the token (first time)
+#   yubikey-ssh recover    pull an existing resident key onto this machine
+#   yubikey-ssh status     show what is currently configured (default)
+#
+# The private key never leaves the YubiKey. ~/.ssh/id_ed25519_sk is only a
+# handle to it, so `recover` is all a new machine needs.
+#
+# NOTE: macOS's own /usr/bin/ssh-keygen is built WITHOUT ENABLE_SK_INTERNAL and
+# cannot talk to a FIDO token at all -- it fails with "Cannot download keys
+# without provider" or "internal security key support not enabled". Homebrew's
+# openssh links libfido2 and works, so we prefer it explicitly.
+
+set -euo pipefail
+
+KEY="$HOME/.ssh/id_ed25519_sk"
+ALLOWED_SIGNERS="$HOME/.ssh/allowed_signers"
+
+log() { printf '==> %s\n' "$*"; }
+sub() { printf '    %s\n' "$*"; }
+die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+
+# Pick an ssh-keygen that can actually reach a security key.
+pick_keygen() {
+	local c
+	for c in "${SSH_KEYGEN:-}" /opt/homebrew/bin/ssh-keygen /usr/local/bin/ssh-keygen; do
+		[ -n "$c" ] && [ -x "$c" ] && { echo "$c"; return 0; }
+	done
+	command -v ssh-keygen 2>/dev/null || return 1
+}
+
+KEYGEN="$(pick_keygen)" || die "no ssh-keygen found"
+
+provider_hint() {
+	echo >&2
+	printf 'The OpenSSH in use cannot reach a FIDO token.\n' >&2
+	printf 'macOS ships OpenSSH without built-in security-key support.\n' >&2
+	printf 'Fix it with:\n\n    brew install openssh\n\n' >&2
+	printf 'then make sure %s comes before /usr/bin on your PATH.\n' \
+		"$(dirname "$KEYGEN")" >&2
+}
+
+# Warn early rather than after a touch prompt.
+check_provider() {
+	case "$OSTYPE" in
+	darwin*)
+		if [ "$KEYGEN" = "/usr/bin/ssh-keygen" ]; then
+			provider_hint
+			die "refusing to run with Apple's ssh-keygen (no FIDO support)"
+		fi
+		;;
+	esac
+	ssh -Q key 2>/dev/null | grep -q '^sk-ssh-ed25519@openssh.com$' ||
+		die "this OpenSSH has no FIDO2 (sk) key support -- need 8.2 or newer"
+}
+
+# A FIDO2 applet with no PIN cannot hold resident credentials at all, so both
+# `generate` and `recover` are doomed until one is set. Catch it up front
+# instead of after a PIN prompt and a touch.
+check_fido_pin() {
+	command -v ykman >/dev/null 2>&1 || return 0 # can't tell; let ssh-keygen try
+	ykman fido info 2>/dev/null | grep -qE '^PIN: *Not set' || return 0
+
+	echo >&2
+	printf 'The YubiKey FIDO2 applet has no PIN set.\n' >&2
+	printf 'Resident (discoverable) keys require one. Set it with:\n\n' >&2
+	printf '    ykman fido access change-pin\n\n' >&2
+	die "no FIDO2 PIN configured"
+}
+
+ensure_ssh_dir() {
+	mkdir -p "$HOME/.ssh"
+	chmod 700 "$HOME/.ssh"
+}
+
+# Record the key as a valid signer for our git identity so that
+# `git log --show-signature` can verify locally.
+write_allowed_signers() {
+	local email pub
+	email="$(git config --get user.email || true)"
+	[ -n "$email" ] || die "git user.email is unset; cannot build allowed_signers"
+	pub="$(cat "$KEY.pub")"
+
+	if [ -f "$ALLOWED_SIGNERS" ]; then
+		grep -v "^${email} " "$ALLOWED_SIGNERS" >"$ALLOWED_SIGNERS.tmp" || true
+		mv "$ALLOWED_SIGNERS.tmp" "$ALLOWED_SIGNERS"
+	fi
+	printf '%s %s\n' "$email" "$pub" >>"$ALLOWED_SIGNERS"
+	chmod 600 "$ALLOWED_SIGNERS"
+	sub "wrote $ALLOWED_SIGNERS"
+}
+
+# Only enable signing once the key exists -- commit.gpgsign=true with a missing
+# key makes every `git commit` fail with "failed to write commit object".
+enable_signing() {
+	git config --global commit.gpgsign true
+	git config --global tag.gpgsign true
+	sub "enabled commit + tag signing"
+}
+
+next_steps() {
+	echo
+	log "Add this key to GitHub -- it must be uploaded TWICE, under both types:"
+	sub "1. https://github.com/settings/ssh/new  ->  Key type: Authentication Key"
+	sub "2. https://github.com/settings/ssh/new  ->  Key type: Signing Key"
+	sub "   (one upload only covers one role; signed commits need both)"
+	echo
+	cat "$KEY.pub"
+	echo
+	sub "then verify with:  ssh -T git@github.com"
+}
+
+generate() {
+	check_provider
+	check_fido_pin
+	ensure_ssh_dir
+	[ -e "$KEY" ] && die "$KEY already exists -- use 'recover', or move it aside first"
+
+	local email
+	email="$(git config --get user.email || echo "$USER")"
+
+	log "Generating a resident FIDO2 key on the YubiKey..."
+	sub "using $KEYGEN"
+	sub "touch the key when it blinks; you will be asked for its FIDO2 PIN"
+	# -O resident         store on the token so any machine can recover it
+	# -O verify-required  (optional) also demand the PIN on every single use
+	"$KEYGEN" -t ed25519-sk -O resident -C "$email" -f "$KEY" ||
+		die "key generation failed"
+
+	chmod 600 "$KEY"
+	write_allowed_signers
+	enable_signing
+	next_steps
+}
+
+recover() {
+	check_provider
+	check_fido_pin
+	ensure_ssh_dir
+	[ -e "$KEY" ] && die "$KEY already exists -- nothing to recover"
+
+	log "Downloading resident keys from the YubiKey..."
+	sub "using $KEYGEN"
+	sub "touch the key when it blinks; you will be asked for its FIDO2 PIN"
+
+	local tmp found
+	tmp="$(mktemp -d)"
+	# ssh-keygen -K writes into the current directory, so do it somewhere safe.
+	# It needs a terminal for the PIN prompt, so stdin/stdout are left attached.
+	if ! (cd "$tmp" && "$KEYGEN" -K); then
+		rm -rf "$tmp"
+		echo >&2
+		printf 'Nothing could be read from the FIDO2 applet. Usually one of:\n' >&2
+		printf '  * no resident credentials exist yet -> run: yubikey-ssh generate\n' >&2
+		printf '  * the key was enrolled without -O resident (not downloadable)\n' >&2
+		printf '  * wrong FIDO2 PIN\n' >&2
+		printf '\nOpenPGP/PIV keys on the token are NOT visible here; ssh-keygen -K\n' >&2
+		printf 'only sees resident FIDO2 credentials. Check with: ykman fido info\n' >&2
+		die "could not download resident keys"
+	fi
+
+	# Files land as id_<type>_sk_rk[_<application>]. Accept ecdsa-sk too --
+	# an existing token may well hold one rather than an ed25519-sk.
+	found="$(find "$tmp" -name 'id_*_sk_rk*' ! -name '*.pub' | head -1)"
+	[ -n "$found" ] || {
+		rm -rf "$tmp"
+		die "no resident sk key found on the token (was it enrolled as resident?)"
+	}
+
+	mv "$found" "$KEY"
+	mv "$found.pub" "$KEY.pub"
+	chmod 600 "$KEY"
+	rm -rf "$tmp"
+	sub "installed $KEY"
+
+	write_allowed_signers
+	enable_signing
+	next_steps
+}
+
+token_present() {
+	case "$OSTYPE" in
+	darwin*) ioreg -p IOUSB -l 2>/dev/null | grep -qi yubi ;;
+	*) lsusb 2>/dev/null | grep -qi yubi ;;
+	esac
+}
+
+status() {
+	printf '%-20s %s\n' "ssh:" "$(command -v ssh)"
+	printf '%-20s %s\n' "ssh-keygen:" "$KEYGEN"
+	printf '%-20s %s\n' "OpenSSH:" "$(ssh -V 2>&1)"
+	printf '%-20s %s\n' "FIDO2 (sk) keys:" \
+		"$(ssh -Q key 2>/dev/null | grep -q '^sk-ssh-ed25519@openssh.com$' && echo yes || echo NO)"
+	printf '%-20s %s\n' "FIDO provider:" \
+		"$([ "$KEYGEN" = /usr/bin/ssh-keygen ] && [[ $OSTYPE == darwin* ]] &&
+			echo 'NO (Apple build - run: brew install openssh)' || echo 'yes')"
+	printf '%-20s %s\n' "YubiKey detected:" "$(token_present && echo yes || echo no)"
+	if command -v ykman >/dev/null 2>&1; then
+		printf '%-20s %s\n' "FIDO2 PIN:" \
+			"$(ykman fido info 2>/dev/null | sed -n 's/^PIN: *//p' | head -1)"
+	fi
+	printf '%-20s %s\n' "key handle:" "$([ -f "$KEY" ] && echo "$KEY" || echo MISSING)"
+	printf '%-20s %s\n' "allowed_signers:" "$([ -f "$ALLOWED_SIGNERS" ] && echo "$ALLOWED_SIGNERS" || echo MISSING)"
+	printf '%-20s %s\n' "ssh config:" "$([ -e "$HOME/.ssh/config" ] && echo "$HOME/.ssh/config" || echo MISSING)"
+	printf '%-20s %s\n' "git gpg.format:" "$(git config --get gpg.format || echo unset)"
+	printf '%-20s %s\n' "git signingkey:" "$(git config --get user.signingkey || echo unset)"
+	printf '%-20s %s\n' "git commit.gpgsign:" "$(git config --get commit.gpgsign || echo unset)"
+}
+
+case "${1:-status}" in
+generate) generate ;;
+recover) recover ;;
+status) status ;;
+*)
+	echo "usage: yubikey-ssh {generate|recover|status}" >&2
+	exit 1
+	;;
+esac

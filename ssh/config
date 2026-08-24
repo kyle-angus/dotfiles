@@ -1,6 +1,12 @@
+# GitHub, authenticated by the FIDO2 applet on the YubiKey.
+#
+# The private key never leaves the token. ~/.ssh/id_ed25519_sk is only a
+# handle to it, and because the key is resident it can be pulled back down
+# onto any machine with `ssh-keygen -K` (see scripts/yubikey-ssh recover).
 Host github.com
 	HostName github.com
-	IdentityFile ~/.ssh/id_rsa.github
+	User git
+	IdentityFile ~/.ssh/id_ed25519_sk
 	IdentitiesOnly yes
 	PreferredAuthentications publickey
 	PasswordAuthentication no
@@ -12,10 +18,16 @@ Host bitbucket
 	PreferredAuthentications publickey
 	PasswordAuthentication no
 
+# ForwardAgent lets these hosts authenticate onward using the YubiKey in this
+# machine's USB port -- each touch prompt happens locally.
+#
+# The RemoteForward lines below are only meaningful for the gpg-agent route;
+# they are inert with a FIDO2 key. Left in place in case revres/gemini still
+# expect a forwarded gpg-agent socket.
 Host revres
   HostName revres
   User kangus
-  IdentityFile ~/.ssh/id_rsa.github
+  IdentityFile ~/.ssh/id_ed25519_sk
   IdentitiesOnly yes
   ForwardAgent yes
   RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/1000/S.gpg-agent.extra
@@ -23,7 +35,7 @@ Host revres
 Host gemini
   HostName gemini
   User kangus
-  IdentityFile ~/.ssh/id_rsa.github
+  IdentityFile ~/.ssh/id_ed25519_sk
   IdentitiesOnly yes
   ForwardAgent yes
   RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/1000/S.gpg-agent.extra
