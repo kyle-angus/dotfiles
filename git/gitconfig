@@ -5,8 +5,27 @@
   signingkey = ~/.ssh/id_ed25519_sk.pub
 
 [core]
-	excludesFile = /Users/kangus/dotfiles/git/gitignore
+  # Was hardcoded to /Users/kangus/..., so it resolved to nothing on any
+  # machine that was not that one mac.
+  excludesFile = ~/dotfiles/git/gitignore
   editor = nvim
+
+  # Windows-only; silently ignored on mac and linux.
+  #
+  # longpaths: opt out of the 260-character MAX_PATH limit, which otherwise
+  #   makes deep node_modules trees impossible to check out.
+  # fscache: batch the NTFS stat calls. `git status` on a large repo drops
+  #   from seconds to milliseconds, which the prompt in bash/prompt.sh runs
+  #   on every single command.
+  longpaths = true
+  fscache = true
+
+  # Git for Windows sets autocrlf=true in its *system* config, which rewrites
+  # every checkout to CRLF -- including the shell scripts in this repo, which
+  # then die under Git Bash with `\r: command not found`. Keep LF everywhere
+  # and leave per-repo exceptions to .gitattributes.
+  autocrlf = false
+  eol = lf
 
 [color]
   ui = true

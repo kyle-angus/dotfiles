@@ -1,3 +1,31 @@
 #!/bin/bash
+#
+# Open a project in IntelliJ IDEA.
+#
+# Was `open -na "IntelliJ IDEA.app"`, which only ever worked on macOS.
 
-open -na "IntelliJ IDEA.app" --args "$@"
+set -eu
+
+# JetBrains Toolbox installs a launcher shim on PATH on every platform, and
+# IDEA's own "Create command-line launcher" does the same. Prefer it: it
+# handles arguments properly and works everywhere.
+for launcher in idea idea64 idea.sh; do
+  if command -v "$launcher" &>/dev/null; then
+    exec "$launcher" "$@"
+  fi
+done
+
+case "${OSTYPE:-}${MSYSTEM:-}" in
+darwin*)
+  exec open -na "IntelliJ IDEA.app" --args "$@"
+  ;;
+msys* | cygwin* | *MINGW* | *MSYS*)
+  echo "intellij: no 'idea' launcher on PATH." >&2
+  echo "In IDEA: Tools > Create Command-line Launcher, or enable the" >&2
+  echo "shell scripts option in JetBrains Toolbox settings." >&2
+  exit 1
+  ;;
+esac
+
+echo "intellij: no 'idea' launcher on PATH." >&2
+exit 1

@@ -1,3 +1,10 @@
+# On Windows this file is reached through an `Include` line in
+# %USERPROFILE%\.ssh\config, and it is read by
+# C:\Windows\System32\OpenSSH\ssh.exe -- which resolves `~` to %USERPROFILE%,
+# the same directory Git Bash calls $HOME. So the paths below need no
+# translation. That build also drives a FIDO2 token natively through the
+# Windows Hello/WebAuthn API, so the YubiKey works with no extra provider.
+
 # GitHub, authenticated by the FIDO2 applet on the YubiKey.
 #
 # The private key never leaves the token. ~/.ssh/id_ed25519_sk is only a

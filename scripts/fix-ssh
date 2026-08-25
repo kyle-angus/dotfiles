@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Windows OpenSSH has no unix-domain agent socket: ssh-agent runs as a Windows
+# service and is reached over a named pipe, so SSH_AUTH_SOCK is neither set nor
+# used. Left to run here this would kill unrelated processes and then export a
+# socket path that nothing listens on, breaking ssh rather than fixing it.
+case "${OSTYPE:-}${MSYSTEM:-}" in
+msys* | cygwin* | *MINGW* | *MSYS*)
+	echo "fix-ssh: not applicable on Windows -- ssh-agent is a service here." >&2
+	echo "Check it with:  sc query ssh-agent" >&2
+	echo "Start it with:  sc config ssh-agent start=auto && net start ssh-agent" >&2
+	echo "(FIDO2/YubiKey keys need no agent at all.)" >&2
+	exit 0
+	;;
+esac
+
 function fix_ssh {
   # check if ssh-eval has been ran
 

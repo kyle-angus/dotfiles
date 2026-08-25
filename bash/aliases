@@ -7,6 +7,8 @@ if [[ $OSTYPE == *"darwin"* ]]; then
 	alias ll="ls -l --color"
 	alias la="ls -alG --color"
 else
+	# Git Bash ships GNU coreutils, so --group-directories-first works there
+	# just as it does on linux.
 	alias l="ls --color --group-directories-first"
 	alias ll="ls -l --color --group-directories-first"
 	alias la="ls -alG --color"
@@ -28,8 +30,28 @@ alias gusf="gus \$(git diff --name-only --cached | fzf -m)"
 alias gdf="gd \$(git ls-files -m | fzf -m)"
 alias gfu="gc --fixup \$(git log --oneline --color=never | fzf | awk '{ print \$1 }')"
 
-# Tmux with UTF-8 support
-alias tmux="tmux -u"
+# Tmux with UTF-8 support. There is no tmux under Git Bash, and aliasing a
+# command that does not exist just turns "command not found" into a confusing
+# "tmux: command not found" from inside the alias.
+if command -v tmux &>/dev/null; then
+	alias tmux="tmux -u"
+fi
 
-# Use nvim
-alias vim="nvim"
+# Use nvim -- but only when it is actually installed. On a fresh Windows box
+# nvim arrives via winget, and until it does, an unconditional alias means
+# `vim` (and `vi`, which points at it) stop working altogether.
+if command -v nvim &>/dev/null; then
+	alias vim="nvim"
+fi
+
+# Windows: give Git Bash the same "open this with whatever handles it" verb
+# that macOS spells `open` and linux spells `xdg-open`. Git Bash already ships
+# /usr/bin/start for exactly this, but `unalias -a` above means we have to say
+# so explicitly. `here` is deliberately not called `explorer`, which would
+# shadow the real explorer.exe and force a `.` argument onto every call.
+case "${OSTYPE:-}${MSYSTEM:-}" in
+msys* | cygwin* | *MINGW* | *MSYS*)
+	alias open="start"
+	alias here="explorer.exe ."
+	;;
+esac

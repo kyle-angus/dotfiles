@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# Open a URL in a GUI browser, whatever this machine calls that.
+#
+#   browse https://example.com
+#
+# For the terminal-browser flavour, see `google` and `duckduckgo`, which try
+# lynx first and only fall back to here.
+
+set -eu
+
+if [ $# -eq 0 ]; then
+	echo "usage: browse <url>" >&2
+	exit 2
+fi
+
+url="$1"
+
+case "${OSTYPE:-}${MSYSTEM:-}" in
+msys* | cygwin* | *MINGW* | *MSYS*)
+	# Git Bash ships /usr/bin/start, a wrapper around `cmd //c start`. It
+	# exists because cmd's own `start` reads its first quoted argument as a
+	# window title rather than as the thing to open.
+	exec start "$url"
+	;;
+darwin*)
+	exec open "$url"
+	;;
+esac
+
+for opener in xdg-open firefox chromium google-chrome; do
+	if command -v "$opener" &>/dev/null; then
+		exec "$opener" "$url"
+	fi
+done
+
+echo "browse: found no way to open $url" >&2
+exit 1

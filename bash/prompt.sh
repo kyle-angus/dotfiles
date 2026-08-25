@@ -35,10 +35,15 @@ function prompt_command {
   # Setup current git information. `git status --porcelain -b` reports the
   # branch and the dirty state in a single call, and its output is stable
   # across locales -- unlike the human-readable `git status` this used to grep.
+  #
+  # --no-optional-locks stops git refreshing the on-disk index as a side
+  # effect. This runs before *every* prompt, and on Windows those writes are
+  # both slow and prone to colliding with an editor or a background fetch
+  # holding index.lock.
   local branch=""
   local git_color="${white}"
   local git_state
-  git_state=$(git status --porcelain=v1 -b 2>/dev/null)
+  git_state=$(git --no-optional-locks status --porcelain=v1 -b 2>/dev/null)
 
   if [[ -n $git_state ]]; then
     # First line is the branch header, e.g. "## main...origin/main [ahead 1]"

@@ -24,12 +24,41 @@ sub() { printf '    %s\n' "$*"; }
 die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 
 # Pick an ssh-keygen that can actually reach a security key.
+is_windows() {
+	case "${OSTYPE:-}${MSYSTEM:-}" in
+	msys* | cygwin* | *MINGW* | *MSYS*) return 0 ;;
+	*) return 1 ;;
+	esac
+}
+
 pick_keygen() {
 	local c
+	# Windows' own OpenSSH reaches the token through the WebAuthn/Windows Hello
+	# API and needs no separate provider library. Prefer it explicitly: some
+	# Git for Windows builds ship an MSYS ssh-keygen that cannot see a
+	# security key at all, and PATH order decides which one you get.
+	if is_windows; then
+		for c in "${SSH_KEYGEN:-}" /c/Windows/System32/OpenSSH/ssh-keygen.exe; do
+			[ -n "$c" ] && [ -x "$c" ] && {
+				echo "$c"
+				return 0
+			}
+		done
+	fi
 	for c in "${SSH_KEYGEN:-}" /opt/homebrew/bin/ssh-keygen /usr/local/bin/ssh-keygen; do
 		[ -n "$c" ] && [ -x "$c" ] && { echo "$c"; return 0; }
 	done
 	command -v ssh-keygen 2>/dev/null || return 1
+}
+
+# Windows OpenSSH wants native paths. cygpath is only present on MSYS, so
+# everything else passes straight through.
+native_path() {
+	if is_windows && command -v cygpath >/dev/null 2>&1; then
+		cygpath -w "$1"
+	else
+		printf '%s' "$1"
+	fi
 }
 
 KEYGEN="$(pick_keygen)" || die "no ssh-keygen found"
@@ -37,10 +66,17 @@ KEYGEN="$(pick_keygen)" || die "no ssh-keygen found"
 provider_hint() {
 	echo >&2
 	printf 'The OpenSSH in use cannot reach a FIDO token.\n' >&2
-	printf 'macOS ships OpenSSH without built-in security-key support.\n' >&2
-	printf 'Fix it with:\n\n    brew install openssh\n\n' >&2
-	printf 'then make sure %s comes before /usr/bin on your PATH.\n' \
-		"$(dirname "$KEYGEN")" >&2
+	if is_windows; then
+		printf 'Use the Windows build, which drives the token via Windows Hello:\n\n' >&2
+		printf '    C:\\Windows\\System32\\OpenSSH\\ssh-keygen.exe\n\n' >&2
+		printf 'Put that directory ahead of /usr/bin on PATH, or set\n' >&2
+		printf 'SSH_KEYGEN to it before running this script.\n' >&2
+	else
+		printf 'macOS ships OpenSSH without built-in security-key support.\n' >&2
+		printf 'Fix it with:\n\n    brew install openssh\n\n' >&2
+		printf 'then make sure %s comes before /usr/bin on your PATH.\n' \
+			"$(dirname "$KEYGEN")" >&2
+	fi
 }
 
 # Warn early rather than after a touch prompt.
@@ -53,6 +89,14 @@ check_provider() {
 		fi
 		;;
 	esac
+
+	# An MSYS-built ssh-keygen has no security-key support compiled in, and
+	# only says so after the PIN prompt -- a confusing place to find out.
+	if is_windows && [ "$KEYGEN" != "/c/Windows/System32/OpenSSH/ssh-keygen.exe" ]; then
+		provider_hint
+		die "refusing to run with $KEYGEN (not the Windows OpenSSH build)"
+	fi
+
 	ssh -Q key 2>/dev/null | grep -q '^sk-ssh-ed25519@openssh.com$' ||
 		die "this OpenSSH has no FIDO2 (sk) key support -- need 8.2 or newer"
 }
@@ -182,6 +226,20 @@ recover() {
 }
 
 token_present() {
+	# ykman knows across all three platforms; prefer it when it is installed.
+	if command -v ykman >/dev/null 2>&1; then
+		ykman list 2>/dev/null | grep -qi yubi && return 0
+	fi
+
+	if is_windows; then
+		# No lsusb on Windows. PnP enumeration is the equivalent, and the
+		# YubiKey shows up as a HID device with Yubico in its name.
+		powershell -NoProfile -Command \
+			"Get-PnpDevice -PresentOnly | Where-Object { \$_.FriendlyName -match 'YubiKey' } | Select-Object -First 1" \
+			2>/dev/null | grep -qi yubikey
+		return
+	fi
+
 	case "$OSTYPE" in
 	darwin*) ioreg -p IOUSB -l 2>/dev/null | grep -qi yubi ;;
 	*) lsusb 2>/dev/null | grep -qi yubi ;;

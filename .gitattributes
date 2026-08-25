@@ -1,0 +1,15 @@
+# Everything in this repo is read by bash, vim, ssh or git -- all of which
+# either require LF or are happier with it. Git for Windows defaults
+# core.autocrlf to true in its system config, which rewrites checkouts to CRLF
+# and leaves every script here failing with `\r: command not found`. These
+# rules override that per-file, whatever the local config says.
+*           text=auto eol=lf
+
+# Never touch the committed Mach-O binary.
+scripts/repo-scanner binary
+
+# Lockfiles and images are not ours to normalise.
+*.lock      -text
+*.png       binary
+*.jpg       binary
+*.gif       binary

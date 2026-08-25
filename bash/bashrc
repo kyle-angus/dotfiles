@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Git Bash reports OSTYPE=msys on some builds and cygwin on others, so key off
+# MSYSTEM too -- every MSYS2 / Git-for-Windows shell sets it.
+function is_windows {
+	case "${OSTYPE:-}${MSYSTEM:-}" in
+	msys* | cygwin* | *MINGW* | *MSYS*) return 0 ;;
+	*) return 1 ;;
+	esac
+}
+
 function setup_gpg {
 	# Setup GPG
 	if command -v gpgconf &>/dev/null; then
@@ -23,13 +32,18 @@ function load_executables {
 	export PATH="$PATH:$HOME/.scripts"
 	source "$HOME/.aliases"
 
-	# Nvm
+	# Nvm. On Windows this is nvm4w -- a separate .exe with nothing to source,
+	# so the guards below simply find no nvm.sh and fall through.
 	export NVM_DIR="$HOME/.nvm"
 	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 
-	# Yarn
-	if command -v yarn &>/dev/null; then
+	# Yarn. `yarn global bin` shells out, which is slow enough to notice on
+	# Windows, so prefer the well-known directory and only ask yarn if that
+	# does not exist.
+	if [ -d "$HOME/.yarn/bin" ]; then
+		export PATH="$PATH:$HOME/.yarn/bin"
+	elif command -v yarn &>/dev/null; then
 		PATH="$PATH:$(yarn global bin)"
 		export PATH
 	fi
@@ -54,8 +68,16 @@ function load_executables {
 		export ADB_SERVER_SOCKET="tcp:$WSL_HOST:5037"
 	fi
 
-	# Setup Prompt
-	source "$HOME/dotfiles/bash/prompt.sh"
+	# Setup Prompt. $DOTFILES lets a checkout live somewhere other than
+	# ~/dotfiles; the guard keeps a missing prompt.sh from aborting the rest of
+	# this function, which is what made a bad clone path look like "none of my
+	# shell config loads".
+	local dotfiles="${DOTFILES:-$HOME/dotfiles}"
+	if [ -f "$dotfiles/bash/prompt.sh" ]; then
+		source "$dotfiles/bash/prompt.sh"
+	else
+		echo "warning: $dotfiles/bash/prompt.sh not found" >&2
+	fi
 
 	# Add case-insensitive line completion. This is a readline setting, so it
 	# needs `bind`; plain `set` would just assign positional parameters.
@@ -66,9 +88,15 @@ function load_executables {
 	# Cargo
 	[ -f ~/.cargo/env ] && source ~/.cargo/env
 
-	# FZF
-	[ -f ~/.fzf.bash ] && source ~/.fzf.bash
-	[ -f ~/.fzf/key-bindings.bash ] && source ~/.fzf/key-bindings.bash
+	# FZF. Modern fzf (0.48+) prints its own bindings, which is the only route
+	# that works for the winget/scoop builds on Windows -- those ship no
+	# key-bindings.bash anywhere on disk.
+	if command -v fzf &>/dev/null && fzf --bash &>/dev/null; then
+		eval "$(fzf --bash)"
+	else
+		[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+		[ -f ~/.fzf/key-bindings.bash ] && source ~/.fzf/key-bindings.bash
+	fi
 
 	# Bash
 	[ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git
@@ -90,9 +118,14 @@ function load_executables {
 		alias nvim="$nvr_cmd"
 		export VISUAL="$nvr_cmd"
 		export EDITOR="$nvr_cmd"
-	else
+	elif command -v nvim &>/dev/null; then
 		export VISUAL="nvim"
 		export EDITOR="nvim"
+	else
+		# Falling back matters on a fresh Windows box: nvim arrives via winget
+		# and until then an $EDITOR of "nvim" breaks `git commit` outright.
+		export VISUAL="vim"
+		export EDITOR="vim"
 	fi
 
 }
@@ -134,10 +167,54 @@ function prepare_linux {
 	load_executables
 }
 
+function prepare_windows {
+	# Ask MSYS for real NTFS symlinks rather than copies. This is what makes
+	# `ln -s` (and git's own symlink support) behave; it only takes effect if
+	# Developer Mode is on or the shell is elevated, and is harmless otherwise.
+	export MSYS=winsymlinks:nativestrict
+
+	# Native Windows tools land in these; none of them are on PATH by default
+	# inside Git Bash.
+	local dir
+	for dir in \
+		"$HOME/.local/bin" \
+		"$HOME/scoop/shims" \
+		"$(cygpath -u "${LOCALAPPDATA:-$HOME/AppData/Local}")/Microsoft/WindowsApps" \
+		"$(cygpath -u "${LOCALAPPDATA:-$HOME/AppData/Local}")/Microsoft/WinGet/Links" \
+		"$(cygpath -u "${LOCALAPPDATA:-$HOME/AppData/Local}")/Programs/Neovim/bin" \
+		"/c/Program Files/Neovim/bin"; do
+		[ -d "$dir" ] && export PATH="$PATH:$dir"
+	done
+
+	load_executables
+
+	# Used by vimrc
+	export PLATFORM='windows'
+
+	# Git for Windows keeps its completions here, not under /usr/share.
+	# shellcheck disable=SC1091
+	[ -f /mingw64/share/git/completion/git-completion.bash ] &&
+		source /mingw64/share/git/completion/git-completion.bash
+
+	# Windows OpenSSH talks to its own ssh-agent service over a named pipe, so
+	# SSH_AUTH_SOCK is neither set nor needed. gpg-agent socket forwarding does
+	# not work here either -- hence no setup_gpg call.
+
+	# Keep the FIDO2 key reachable: MSYS ships an ssh that cannot drive a
+	# security key, and if it shadows the Windows one, `ssh -T git@github.com`
+	# fails with "no such provider". Windows' own build handles sk keys through
+	# the WebAuthn API, so make sure it wins.
+	if [ -x /c/Windows/System32/OpenSSH/ssh.exe ]; then
+		export PATH="/c/Windows/System32/OpenSSH:$PATH"
+	fi
+}
+
 if [[ $OSTYPE == *'darwin'* ]]; then
 	prepare_mac
 elif [ -n "${WSL_DISTRO_NAME+x}" ]; then
 	prepare_wsl
+elif is_windows; then
+	prepare_windows
 elif [[ $OSTYPE == 'linux-gnu' ]]; then
 	prepare_linux
 else

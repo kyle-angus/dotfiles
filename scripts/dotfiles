@@ -1,7 +1,4 @@
 #!/bin/bash
-
-function dotfiles() {
-	nvim "$HOME/dotfiles/"
-}
-
-dotfiles
+# $EDITOR rather than a hardcoded nvim: on a fresh Windows box nvim arrives via
+# winget, and this script is one of the first things you want to run there.
+exec "${EDITOR:-vim}" "$HOME/dotfiles/"

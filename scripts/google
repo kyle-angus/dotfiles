@@ -1,2 +1,7 @@
 #!/bin/bash
-exec lynx "https://google.com/search?q=$*"
+# See duckduckgo: lynx when it exists, GUI browser otherwise.
+url="https://google.com/search?q=$*"
+if command -v lynx &>/dev/null; then
+  exec lynx "$url"
+fi
+exec "$(dirname "$0")/browse" "$url"

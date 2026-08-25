@@ -1,2 +1,9 @@
 #!/bin/bash
-exec lynx "https://duckduckgo.com/?q=$*"
+# Terminal-first search. lynx keeps results in the shell (the point of the `?`
+# alias); anywhere lynx is missing -- macOS and Windows, in practice -- hand
+# off to the GUI browser rather than failing outright.
+url="https://duckduckgo.com/?q=$*"
+if command -v lynx &>/dev/null; then
+  exec lynx "$url"
+fi
+exec "$(dirname "$0")/browse" "$url"

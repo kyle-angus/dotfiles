@@ -1,5 +1,4 @@
 #!/bin/bash
-
-if command -v firefox &>/dev/null; then
-  firefox https://tmuxcheatsheet.com
-fi
+# Was hardcoded to firefox, so it silently did nothing on any machine without
+# it -- which is every mac and every Windows box.
+exec "$(dirname "$0")/browse" https://tmuxcheatsheet.com
