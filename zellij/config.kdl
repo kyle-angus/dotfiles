@@ -1,0 +1,69 @@
+// Zellij -- the multiplexer used on Windows, where tmux is unavailable.
+//
+// This is a translation of tmux/tmux.conf, not a copy: Zellij is modal rather
+// than prefix-driven, so only the parts that have a real equivalent are here.
+// What did not survive the move is listed at the bottom of this file.
+//
+// Linked to %APPDATA%\Zellij\config by install.sh. Check what Zellij thinks it
+// is reading with:  zellij setup --check
+
+// tmux.conf: set -g history-limit 10000
+scroll_buffer_size 10000
+
+// tmux.conf: set -g mouse on
+mouse_mode true
+
+// Replaces the tmux-resurrect plugin. Zellij serializes sessions itself, so
+// they survive a reboot and come back with `zellij attach`. No plugin manager,
+// no clone step, nothing to keep up to date.
+session_serialization true
+serialize_pane_viewport true
+
+// Without this Zellij opens whatever Windows considers the default shell --
+// cmd.exe -- and none of bash/bashrc applies. Use the Git Bash launcher in
+// bin/, not usr/bin/bash.exe: the former sets up the MSYS environment first.
+default_shell "C:/Program Files/Git/bin/bash.exe"
+
+// Zellij draws a frame around every pane. tmux drew a single line, which is
+// closer to what pane-border-style gave us, and costs less screen space.
+pane_frames false
+
+keybinds {
+    // tmux.conf: unbind C-b / set-option -g prefix C-a
+    //
+    // Ctrl+b is readline's backward-char, which is the usual reason for moving
+    // the prefix in the first place, so take it back.
+    shared_except "tmux" "locked" {
+        unbind "Ctrl b"
+        bind "Ctrl a" { SwitchToMode "Tmux"; }
+    }
+
+    tmux {
+        unbind "Ctrl b"
+
+        // tmux.conf: bind a send-prefix
+        // Write 1 is a literal Ctrl+A (0x01), so Ctrl+a a still reaches
+        // readline's beginning-of-line.
+        bind "a" { Write 1; SwitchToMode "Normal"; }
+
+        // tmux.conf: bind-key C-a last-window
+        bind "Ctrl a" { ToggleTab; SwitchToMode "Normal"; }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Not carried over from tmux.conf
+//
+//   status-right clock      Zellij's built-in status bar has no clock. It
+//                           needs a third-party plugin (zjstatus).
+//   tmux-pomodoro-plus      No equivalent; nothing built in.
+//   base-index 1            Zellij has no configurable tab base index.
+//   renumber-windows        Tabs are always contiguous.
+//   allow-rename off        Zellij does not rename tabs from terminal escapes.
+//   escape-time 50          Not applicable; Zellij does not use that timeout.
+//   default-terminal        Zellij sets TERM itself.
+//   the S-up / S-down       Those retheme the status bar to distinguish an
+//   nested-session bindings outer session from an inner one. Zellij 0.45
+//                           handles nesting natively -- see the
+//                           nested_session_handling option.
+// ---------------------------------------------------------------------------

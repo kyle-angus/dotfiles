@@ -173,18 +173,27 @@ function prepare_windows {
 	# Developer Mode is on or the shell is elevated, and is harmless otherwise.
 	export MSYS=winsymlinks:nativestrict
 
-	# Native Windows tools land in these; none of them are on PATH by default
-	# inside Git Bash.
-	local dir
+	# Native Windows tools land in these. Some are already on PATH -- an
+	# installer that edits HKCU\Environment is inherited by every new shell --
+	# so skip anything present rather than appending a duplicate on every
+	# nested shell.
+	local dir local_appdata
+	local_appdata="$(cygpath -u "${LOCALAPPDATA:-$HOME/AppData/Local}")"
 	for dir in \
 		"$HOME/.local/bin" \
 		"$HOME/scoop/shims" \
-		"$(cygpath -u "${LOCALAPPDATA:-$HOME/AppData/Local}")/Microsoft/WindowsApps" \
-		"$(cygpath -u "${LOCALAPPDATA:-$HOME/AppData/Local}")/Microsoft/WinGet/Links" \
-		"$(cygpath -u "${LOCALAPPDATA:-$HOME/AppData/Local}")/Programs/Neovim/bin" \
+		"$local_appdata/Microsoft/WindowsApps" \
+		"$local_appdata/Microsoft/WinGet/Links" \
+		"$local_appdata/Programs/Neovim/bin" \
+		"$local_appdata/Zellij" \
 		"/c/Program Files/Neovim/bin"; do
-		[ -d "$dir" ] && export PATH="$PATH:$dir"
+		[ -d "$dir" ] || continue
+		case ":$PATH:" in
+		*":$dir:"*) continue ;;
+		esac
+		PATH="$PATH:$dir"
 	done
+	export PATH
 
 	load_executables
 

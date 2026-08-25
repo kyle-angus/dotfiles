@@ -397,20 +397,25 @@ function setup_windows {
 	fi
 
 	log "Installing packages..."
+	# Zellij stands in for tmux here: upstream ships an official
+	# x86_64-pc-windows-msvc build, and it needs neither WSL nor Cygwin.
+	# See zellij/config.kdl for what did and did not carry over from
+	# tmux/tmux.conf.
 	winget_install \
 		Neovim.Neovim \
 		junegunn.fzf \
 		BurntSushi.ripgrep.MSVC \
-		Yubico.YubiKeyManager
+		Yubico.YubiKeyManager \
+		Zellij.Zellij
 
 	get_dotfiles
 	setup_ssh
 	create_links
 	setup_node
 
-	# tmux, mosh and gpg-agent socket forwarding have no usable Git Bash
-	# build. Use WSL if you need them.
-	sub "skipping tmux/gpg -- not available under Git Bash"
+	# mosh and gpg-agent socket forwarding have no usable Git Bash build.
+	# Use WSL if you need them.
+	sub "skipping tmux/gpg -- use zellij instead of tmux; see the README"
 }
 
 # ---------------------------------------------------------------------------
@@ -537,6 +542,13 @@ function create_links {
 	if is_windows; then
 		# Native nvim.exe reads %LOCALAPPDATA%\nvim, never ~/.config/nvim.
 		link "$DOTFILES/nvim" "$(cygpath -u "$LOCALAPPDATA")/nvim"
+
+		# Zellij's config *directory* -- layouts/ and themes/ live alongside
+		# config.kdl, so link the directory rather than the file. Note this
+		# one is Roaming (%APPDATA%), not Local. Confirm with:
+		#   zellij setup --check
+		link "$DOTFILES/zellij" "$(cygpath -u "$APPDATA")/Zellij/config"
+
 		# zsh, tmux and X have no Git Bash story; skip them rather than
 		# litter $HOME with files nothing will ever read.
 		sub "skipping zshenv/tmux.conf/xprofile/Xresources on Windows"

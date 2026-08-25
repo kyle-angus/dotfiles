@@ -39,6 +39,7 @@ generated stubs say so in their first line.
 | Config | Path |
 | --- | --- |
 | Neovim | `%LOCALAPPDATA%\nvim` (not `~/.config/nvim`) |
+| Zellij | `%APPDATA%\Zellij\config` — note Roaming, not Local |
 | SSH | `%USERPROFILE%\.ssh\config`, which includes `ssh/config` |
 | Git | `%USERPROFILE%\.gitconfig`, which includes `git/gitconfig` |
 
@@ -71,11 +72,45 @@ and `yubikey-ssh` refuses to run with any other.
 yubikey-ssh status
 ```
 
+### Multiplexer: Zellij instead of tmux
+
+There is no usable tmux under Git Bash, so Windows gets [Zellij](https://zellij.dev)
+— upstream ships an official `x86_64-pc-windows-msvc` build, so it needs
+neither WSL nor Cygwin. `install.sh` installs it and links `zellij/`.
+
+`zellij/config.kdl` is a *translation* of `tmux/tmux.conf`, not a copy — Zellij
+is modal rather than prefix-driven. What carried over:
+
+| tmux | Zellij |
+| --- | --- |
+| `prefix C-a` | `Ctrl a` enters Zellij's built-in tmux mode (default is `Ctrl b`, rebound) |
+| `bind a send-prefix` | `Ctrl a` `a` writes a literal `0x01` |
+| `bind-key C-a last-window` | `Ctrl a` `Ctrl a` → `ToggleTab` |
+| `history-limit 10000` | `scroll_buffer_size 10000` |
+| `mouse on` | `mouse_mode true` |
+| `tmux-resurrect` | `session_serialization` — built in, no plugin manager |
+
+What did **not**: the status-line clock (needs a third-party plugin such as
+zjstatus), `tmux-pomodoro-plus`, and `base-index`/`renumber-windows`, which
+Zellij has no equivalent for. The full list is at the bottom of
+`zellij/config.kdl`.
+
+Zellij is launched with Git Bash as its shell (`default_shell`); without that
+it opens `cmd.exe` and none of `bash/bashrc` applies.
+
+After editing the config, check that Zellij agrees with you:
+
+```bash
+zellij setup --check
+```
+
+`tmux/tmux.conf` is still linked on macOS and Linux and is untouched.
+
 ### Not available under Git Bash
 
-tmux, mosh, gpg-agent socket forwarding, and the X config (`term/`). Use WSL if
-you need them; `install.sh` skips them rather than leaving files in `$HOME`
-that nothing reads.
+mosh, gpg-agent socket forwarding, and the X config (`term/`). Use WSL if you
+need them; `install.sh` skips them rather than leaving files in `$HOME` that
+nothing reads.
 
 ## Modifying
 
