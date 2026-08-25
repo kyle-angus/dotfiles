@@ -53,5 +53,16 @@ case "${OSTYPE:-}${MSYSTEM:-}" in
 msys* | cygwin* | *MINGW* | *MSYS*)
 	alias open="start"
 	alias here="explorer.exe ."
+
+	# tmux muscle memory, pointed at zellij (see zellij/config.kdl for why).
+	# Zellij aliases `a` -> attach and `ls` -> list-sessions itself, so
+	# `tmux a` and `tmux ls` carry over untouched. `tmux a -c` attaches or
+	# creates, which is what `tmux new -A` did.
+	#
+	# Guarded on tmux being absent so that a real tmux -- a native port, say
+	# -- keeps its own name and the `tmux -u` alias above still wins.
+	if ! command -v tmux &>/dev/null && command -v zellij &>/dev/null; then
+		alias tmux="zellij"
+	fi
 	;;
 esac
